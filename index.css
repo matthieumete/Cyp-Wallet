@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Inter", sans-serif;
+  --color-brand-brown: #1e293b;
+  --color-brand-sand: #0f172a;
+}
+
+/* Custom scanner laser animation */
+@keyframes laser {
+  0%, 100% {
+    top: 0%;
+  }
+  50% {
+    top: 100%;
+  }
+}
+
+.animate-laser {
+  animation: laser 2.5s infinite ease-in-out;
+}
+
