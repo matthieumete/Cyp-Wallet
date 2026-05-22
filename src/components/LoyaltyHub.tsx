@@ -229,6 +229,208 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
   const progressPercent = Math.min(100, (points / threshold) * 100);
   const isEligible = points >= threshold;
 
+  const headerProfileInfo = (
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 relative overflow-hidden">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shadow-sm shrink-0">
+            <CreditCard className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+              {client ? `PASS DE FIDÉLITÉ • ${client.nom.toUpperCase()}` : 'PASS DE FIDÉLITÉ WALLET'}
+            </p>
+            <h3 className="text-sm md:text-base font-display font-extrabold text-white tracking-tight font-mono uppercase">
+              {idPassWallet}
+            </h3>
+          </div>
+        </div>
+        <button
+          onClick={onClear}
+          className="p-1 px-3 text-[10px] font-bold text-slate-400 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-200 rounded-full transition-all outline-none cursor-pointer"
+        >
+          Scanner un autre pass
+        </button>
+      </div>
+
+      {/* Progress Arc and state stats */}
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        {/* Visual indicators */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Solde Actuel</span>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="text-4xl font-display font-extrabold text-white tracking-tight font-mono">{points}</span>
+                <span className="text-[10px] text-white font-bold uppercase font-mono">pts</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seuil De Remise</span>
+              <div className="flex items-baseline gap-1 mt-1 justify-end">
+                <span className="text-xl font-display font-extrabold text-slate-200">{threshold}</span>
+                <span className="text-[9px] text-slate-500 font-semibold uppercase font-mono">pts</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Custom styled Progress bar */}
+          <div className="space-y-2">
+            <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden relative border border-slate-800/65">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.4)]' : 'bg-slate-700'}`}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-[9px] font-bold text-slate-500 font-mono">
+              <span>0 PT</span>
+              <span>{progressPercent.toFixed(0)}% DU SEUIL</span>
+              <span>{threshold} PTS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Action Trigger/Reward Banner */}
+        <div className="h-full flex">
+          {isEligible ? (
+            <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between">
+              <div>
+                <h4 className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  REMISE DISPONIBLE !
+                </h4>
+                <p className="text-[11px] text-emerald-350/80 mt-1 lines-relaxed leading-snug">
+                  Le client a atteint le seuil requis de <strong>{threshold} points</strong>. Encaisser ou déduire l'offre de récompense en boutique.
+                </p>
+              </div>
+              <ShinyButton
+                type="button"
+                onClick={handleRedeemDiscount}
+                disabled={isSubmitting}
+                className="mt-4 w-full"
+              >
+                <Ticket className="w-3.5 h-3.5 text-white" />
+                Consommer la remise (-{threshold} pts)
+              </ShinyButton>
+            </div>
+          ) : (
+            <div className="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-center text-center">
+              <Award className="w-7 h-7 text-slate-500 mx-auto mb-2.5" />
+              <p className="text-xs font-semibold text-slate-350">Progression en cours</p>
+              <p className="text-[10px] text-slate-400 mt-1 max-w-[190px] mx-auto leading-relaxed">
+                Il reste encore <strong className="text-white font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const clientProfileSection = (
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 uppercase">
+          <UserCheck className="w-4 h-4 text-slate-300" />
+          Fiche Client Coordonnées
+        </h3>
+        {client ? (
+          <span className="text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-white" />
+            Compte Enregistré
+          </span>
+        ) : (
+          <span className="text-[9px] font-bold text-slate-400 bg-slate-808/60 border border-slate-700 px-2.5 py-1 rounded-full uppercase font-mono">
+            Non Renseigné
+          </span>
+        )}
+      </div>
+
+      {client ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-850">
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+              <User className="w-3.5 h-3.5 text-slate-500" />
+              Nom Complet
+            </span>
+            <p className="text-xs text-white font-semibold mt-1">{client.nom}</p>
+          </div>
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+              <Mail className="w-3.5 h-3.5 text-slate-500" />
+              Adresse Email
+            </span>
+            <p className="text-xs text-white font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
+          </div>
+          <div>
+            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+              <Phone className="w-3.5 h-3.5 text-slate-500" />
+              Téléphone
+            </span>
+            <p className="text-xs text-white font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Ce pass d'identification n'est pas encore associé à une fiche client. Enregistrez les coordonnées ci-dessous pour mieux le fidéliser.
+          </p>
+
+          <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-850">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                  Nom Complet du client <span className="text-white font-bold">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={registerName}
+                  onChange={(e) => setRegisterName(e.target.value)}
+                  placeholder="Ex: Jean Dupont"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+                />
+              </div>
+              <div>
+                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                  Numéro de Téléphone
+                </label>
+                <input
+                  type="tel"
+                  value={registerPhone}
+                  onChange={(e) => setRegisterPhone(e.target.value)}
+                  placeholder="Ex: 06 12 34 56 78"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                Adresse Email
+              </label>
+              <input
+                type="email"
+                value={registerEmail}
+                onChange={(e) => setRegisterEmail(e.target.value)}
+                placeholder="Ex: jean.dupont@gmail.com"
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+              />
+            </div>
+
+            <ShinyButton
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              Créer la Fiche Client Coordonnées
+            </ShinyButton>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6" id="loyalty-hub-container">
       {/* QR Code Creation Modal */}
@@ -346,205 +548,8 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
         )}
       </AnimatePresence>
 
-      {/* Header Profile Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 relative overflow-hidden">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shadow-sm shrink-0">
-              <CreditCard className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                {client ? `PASS DE FIDÉLITÉ • ${client.nom.toUpperCase()}` : 'PASS DE FIDÉLITÉ WALLET'}
-              </p>
-              <h3 className="text-sm md:text-base font-display font-extrabold text-white tracking-tight font-mono uppercase">
-                {idPassWallet}
-              </h3>
-            </div>
-          </div>
-          <button
-            onClick={onClear}
-            className="p-1 px-3 text-[10px] font-bold text-slate-400 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-200 rounded-full transition-all outline-none cursor-pointer"
-          >
-            Scanner un autre pass
-          </button>
-        </div>
-
-        {/* Progress Arc and state stats */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          {/* Visual indicators */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-end">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Solde Actuel</span>
-                <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-4xl font-display font-extrabold text-white tracking-tight font-mono">{points}</span>
-                  <span className="text-[10px] text-white font-bold uppercase font-mono">pts</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seuil De Remise</span>
-                <div className="flex items-baseline gap-1 mt-1 justify-end">
-                  <span className="text-xl font-display font-extrabold text-slate-200">{threshold}</span>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase font-mono">pts</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Custom styled Progress bar */}
-            <div className="space-y-2">
-              <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden relative border border-slate-800/65">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.4)]' : 'bg-slate-700'}`}
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center text-[9px] font-bold text-slate-500 font-mono">
-                <span>0 PT</span>
-                <span>{progressPercent.toFixed(0)}% DU SEUIL</span>
-                <span>{threshold} PTS</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Dynamic Action Trigger/Reward Banner */}
-          <div className="h-full flex">
-            {isEligible ? (
-              <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between">
-                <div>
-                  <h4 className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    REMISE DISPONIBLE !
-                  </h4>
-                  <p className="text-[11px] text-emerald-350/80 mt-1 lines-relaxed leading-snug">
-                    Le client a atteint le seuil requis de <strong>{threshold} points</strong>. Encaisser ou déduire l'offre de récompense en boutique.
-                  </p>
-                </div>
-                <ShinyButton
-                  type="button"
-                  onClick={handleRedeemDiscount}
-                  disabled={isSubmitting}
-                  className="mt-4 w-full"
-                >
-                  <Ticket className="w-3.5 h-3.5 text-white" />
-                  Consommer la remise (-{threshold} pts)
-                </ShinyButton>
-              </div>
-            ) : (
-              <div className="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-center text-center">
-                <Award className="w-7 h-7 text-slate-500 mx-auto mb-2.5" />
-                <p className="text-xs font-semibold text-slate-350">Progression en cours</p>
-                <p className="text-[10px] text-slate-400 mt-1 max-w-[190px] mx-auto leading-relaxed">
-                  Il reste encore <strong className="text-white font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Client Profile Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-            <UserCheck className="w-4 h-4 text-slate-300" />
-            Fiche Client Coordonnées
-          </h3>
-          {client ? (
-            <span className="text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-white" />
-              Compte Enregistré
-            </span>
-          ) : (
-            <span className="text-[9px] font-bold text-slate-400 bg-slate-808/60 border border-slate-700 px-2.5 py-1 rounded-full uppercase font-mono">
-              Non Renseigné
-            </span>
-          )}
-        </div>
-
-        {client ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-850">
-            <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-slate-500" />
-                Nom Complet
-              </span>
-              <p className="text-xs text-white font-semibold mt-1">{client.nom}</p>
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-slate-500" />
-                Adresse Email
-              </span>
-              <p className="text-xs text-white font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-slate-500" />
-                Téléphone
-              </span>
-              <p className="text-xs text-white font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Ce pass d'identification n'est pas encore associé à une fiche client. Enregistrez les coordonnées ci-dessous pour mieux le fidéliser.
-            </p>
-            
-            <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-850">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                    Nom Complet du client <span className="text-white font-bold">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={registerName}
-                    onChange={(e) => setRegisterName(e.target.value)}
-                    placeholder="Ex: Jean Dupont"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                    Numéro de Téléphone
-                  </label>
-                  <input
-                    type="tel"
-                    value={registerPhone}
-                    onChange={(e) => setRegisterPhone(e.target.value)}
-                    placeholder="Ex: 06 12 34 56 78"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                  Adresse Email
-                </label>
-                <input
-                  type="email"
-                  value={registerEmail}
-                  onChange={(e) => setRegisterEmail(e.target.value)}
-                  placeholder="Ex: jean.dupont@gmail.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
-                />
-              </div>
-
-              <ShinyButton
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                Créer la Fiche Client Coordonnées
-              </ShinyButton>
-            </form>
-          </div>
-        )}
-      </div>
+      {client ? headerProfileInfo : clientProfileSection}
+      {client ? clientProfileSection : headerProfileInfo}
 
       {/* Credit transaction amount section */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
