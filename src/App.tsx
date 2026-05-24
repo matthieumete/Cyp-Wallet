@@ -1,20 +1,23 @@
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, ReactNode } from 'react';
 import { Commercant } from './types';
 import { DbManager } from './db';
 import Login from './components/Login';
 import Scanner from './components/Scanner';
 import LoyaltyHub from './components/LoyaltyHub';
 import Settings from './components/Settings';
-import { Store, LogOut, Sun, Wifi, MessageSquareCode, Sparkles, ReceiptEuro, Wallet, HeartHandshake, UserPlus } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import Catalogue from './components/Catalogue';
+import { LogOut, Sun, ReceiptEuro, Wallet, UserPlus, HeartHandshake, ShoppingBag } from 'lucide-react';
 import { ShinyButton } from './components/ui/shiny-button';
+
+type AppTab = 'fidelite' | 'catalogue';
 
 export default function App() {
   const [activeMerchant, setActiveMerchant] = useState<Commercant | null>(null);
   const [activeClientPass, setActiveClientPass] = useState<string | null>(null);
   const [isSupabase, setIsSupabase] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState<AppTab>('fidelite');
+  const [, startTransition] = useTransition();
 
   // Load active session on start
   useEffect(() => {
@@ -118,7 +121,26 @@ export default function App() {
 
       {/* Main Body */}
       <main className="flex-grow container mx-auto max-w-7xl px-4 py-8 md:py-12 flex flex-col gap-8">
-        {/* ACTIVE COMMERÇANT DASHBOARD Flow */}
+        {/* Tab navigation */}
+        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-1.5 w-full md:w-auto md:self-start">
+          <TabButton
+            active={activeTab === 'fidelite'}
+            onClick={() => startTransition(() => setActiveTab('fidelite'))}
+            icon={<HeartHandshake className="w-3.5 h-3.5" />}
+            label="Fidélité & encaissement"
+          />
+          <TabButton
+            active={activeTab === 'catalogue'}
+            onClick={() => startTransition(() => setActiveTab('catalogue'))}
+            icon={<ShoppingBag className="w-3.5 h-3.5" />}
+            label="Catalogue produits"
+          />
+        </div>
+
+        {activeTab === 'catalogue' ? (
+          <Catalogue merchant={activeMerchant} />
+        ) : (
+        /* ACTIVE COMMERÇANT DASHBOARD Flow */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left side column: The scanner screen */}
           <div className="lg:col-span-5 space-y-6">
@@ -198,6 +220,7 @@ export default function App() {
               )}
             </div>
           </div>
+        )}
 
         {/* Global Settings & DB Configuration Section */}
         <Settings onConfigChange={handleConfigChange} />
@@ -216,5 +239,31 @@ export default function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 md:flex-none flex items-center gap-2 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+        active
+          ? 'bg-slate-800 text-white shadow-inner'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

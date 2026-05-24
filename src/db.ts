@@ -1,12 +1,13 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Commercant, CagnotteSaintCyp, SupabaseConfig, TransactionHistory, ClientSaintCyp } from './types';
-import { INITIAL_MERCHANTS, INITIAL_CAGNOTTES, MOCK_CUSTOMERS } from './data';
+import { Commercant, CagnotteSaintCyp, SupabaseConfig, TransactionHistory, ClientSaintCyp, Produit } from './types';
+import { INITIAL_MERCHANTS, INITIAL_CAGNOTTES, MOCK_CUSTOMERS, INITIAL_PRODUITS } from './data';
 
 // Key for storage
 const SUPABASE_CONFIG_KEY = 'saint_cyp_supabase_config_v1';
 const LOCAL_CAGNOTTES_KEY = 'saint_cyp_local_cagnottes_v1';
 const LOCAL_TRANSACTIONS_KEY = 'saint_cyp_local_transactions_v1';
 const LOCAL_CLIENTS_KEY = 'saint_cyp_local_clients_v1';
+const LOCAL_PRODUITS_KEY = 'saint_cyp_local_produits_v1';
 
 export class DbManager {
   private static supabaseInstance: SupabaseClient | null = null;
@@ -92,6 +93,7 @@ export class DbManager {
     localStorage.removeItem(LOCAL_CAGNOTTES_KEY);
     localStorage.removeItem(LOCAL_TRANSACTIONS_KEY);
     localStorage.removeItem(LOCAL_CLIENTS_KEY);
+    localStorage.removeItem(LOCAL_PRODUITS_KEY);
   }
 
   // Get local cagnottes
@@ -499,6 +501,149 @@ export class DbManager {
 
     this.saveLocalClients(clients);
     return { success: true, data: newClient };
+  }
+
+  // ============================================================
+  // Catalogue produits
+  // ============================================================
+
+  private static getLocalProduits(): Produit[] {
+    const data = localStorage.getItem(LOCAL_PRODUITS_KEY);
+    if (!data) {
+      localStorage.setItem(LOCAL_PRODUITS_KEY, JSON.stringify(INITIAL_PRODUITS));
+      return INITIAL_PRODUITS;
+    }
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return INITIAL_PRODUITS;
+    }
+  }
+
+  private static saveLocalProduits(produits: Produit[]) {
+    localStorage.setItem(LOCAL_PRODUITS_KEY, JSON.stringify(produits));
+  }
+
+  public static async listProduits(
+    commercantId: string
+  ): Promise<{ data: Produit[]; source: 'supabase' | 'local' }> {
+    const supabase = this.getSupabaseClient();
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('produits')
+          .select('*')
+          .eq('commercant_id', commercantId)
+          .order('position', { ascending: true })
+          .order('nom', { ascending: true });
+        if (error) throw error;
+        if (data) return { data: data as Produit[], source: 'supabase' };
+      } catch (e) {
+        console.error('Erreur Supabase listProduits:', e);
+      }
+    }
+
+    const all = this.getLocalProduits();
+    const filtered = all
+      .filter((p) => p.commercant_id === commercantId)
+      .sort((a, b) => a.position - b.position || a.nom.localeCompare(b.nom));
+    return { data: filtered, source: 'local' };
+  }
+
+  public static async createProduit(
+    input: Omit<Produit, 'id' | 'date_creation' | 'date_modification'>
+  ): Promise<{ success: boolean; data?: Produit; error?: string }> {
+    const supabase = this.getSupabaseClient();
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('produits')
+          .insert(input)
+          .select()
+          .single();
+        if (error) throw error;
+        return { success: true, data: data as Produit };
+      } catch (e: any) {
+        return { success: false, error: e.message || String(e) };
+      }
+    }
+
+    const now = new Date().toISOString();
+    const newProduit: Produit = {
+      ...input,
+      id: crypto.randomUUID(),
+      date_creation: now,
+      date_modification: now,
+    };
+    const all = this.getLocalProduits();
+    all.push(newProduit);
+    this.saveLocalProduits(all);
+    return { success: true, data: newProduit };
+  }
+
+  public static async updateProduit(
+    id: string,
+    updates: Partial<Omit<Produit, 'id' | 'commercant_id' | 'date_creation'>>
+  ): Promise<{ success: boolean; data?: Produit; error?: string }> {
+    const supabase = this.getSupabaseClient();
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('produits')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return { success: true, data: data as Produit };
+      } catch (e: any) {
+        return { success: false, error: e.message || String(e) };
+      }
+    }
+
+    const all = this.getLocalProduits();
+    const idx = all.findIndex((p) => p.id === id);
+    if (idx === -1) return { success: false, error: 'Produit introuvable.' };
+    const updated: Produit = {
+      ...all[idx],
+      ...updates,
+      date_modification: new Date().toISOString(),
+    };
+    all[idx] = updated;
+    this.saveLocalProduits(all);
+    return { success: true, data: updated };
+  }
+
+  public static async deleteProduit(
+    id: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = this.getSupabaseClient();
+
+    if (supabase) {
+      try {
+        const { error } = await supabase.from('produits').delete().eq('id', id);
+        if (error) throw error;
+        return { success: true };
+      } catch (e: any) {
+        return { success: false, error: e.message || String(e) };
+      }
+    }
+
+    const all = this.getLocalProduits();
+    const next = all.filter((p) => p.id !== id);
+    if (next.length === all.length) return { success: false, error: 'Produit introuvable.' };
+    this.saveLocalProduits(next);
+    return { success: true };
+  }
+
+  public static async setProduitDisponibilite(
+    id: string,
+    disponible: boolean
+  ): Promise<{ success: boolean; data?: Produit; error?: string }> {
+    return this.updateProduit(id, { disponible });
   }
 
   // 7. Get All Registered Clients
