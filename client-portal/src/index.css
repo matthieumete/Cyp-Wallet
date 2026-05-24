@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Fraunces", "Georgia", serif;
+
+  /* Fonds naturels */
+  --color-cream: #faf6ed;
+  --color-sand: #f5f1e8;
+  --color-shell: #ebe4d4;
+  --color-linen: #f0ead8;
+
+  /* Verts marché */
+  --color-olive: #6b8e4e;
+  --color-olive-dark: #556e3c;
+  --color-olive-deep: #3f5429;
+  --color-sage: #87a96b;
+  --color-sage-light: #a3c089;
+  --color-moss: #4a6741;
+
+  /* Accents chauds */
+  --color-terracotta: #c97b4a;
+  --color-terracotta-dark: #a85d3a;
+  --color-straw: #d4a574;
+  --color-straw-light: #e3bf94;
+  --color-paprika: #b8553a;
+
+  /* Bois & taupes */
+  --color-wood: #3d2914;
+  --color-wood-soft: #5c3f24;
+  --color-taupe: #6b5d4f;
+  --color-taupe-light: #9a8e7f;
+  --color-stone: #c4b8a6;
+}
+
+html, body {
+  background-color: var(--color-cream);
+  color: var(--color-wood);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Texture papier / chaleur naturelle */
+.bg-paper {
+  background-color: var(--color-cream);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(212, 165, 116, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(135, 169, 107, 0.08) 0%, transparent 50%);
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+
+.animate-sway {
+  animation: sway 4s ease-in-out infinite;
+  transform-origin: top center;
+}

@@ -1,6 +1,7 @@
 node_modules/
 build/
 dist/
+dist-portal/
 coverage/
 .DS_Store
 *.log
