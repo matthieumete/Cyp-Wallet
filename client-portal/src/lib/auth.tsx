@@ -38,12 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
+    // Hard timeout safety net: never block the UI more than 3s on auth init.
+    const timeout = setTimeout(() => {
+      if (mounted) {
+        console.warn('[portal] auth init timeout, sortie forcée du chargement');
+        setLoading(false);
+      }
+    }, 3000);
+
     // Apply session synchronously, but let profile fetch happen in the
     // background so the UI never blocks on a slow Supabase call.
     const applySession = (sess: Session | null) => {
       if (!mounted) return;
       setSession(sess);
       setUser(sess?.user ?? null);
+      setLoading(false);
       if (sess?.user) {
         ensureProfile(sess.user)
           .then((prof) => {
@@ -77,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      clearTimeout(timeout);
       sub.subscription.unsubscribe();
     };
   }, []);
