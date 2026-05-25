@@ -13,17 +13,28 @@ export default function Merchants() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      setError(
+        "Le chargement met trop de temps. Vérifiez votre connexion ou l'URL Supabase dans votre .env."
+      );
+      setLoading(false);
+    }, 8000);
+
     (async () => {
       try {
         const [m, c] = await Promise.all([listMerchants(), listCategoriesByMerchant()]);
         setMerchants(m);
         setCategories(c);
       } catch (e: any) {
+        console.error('[portal] listMerchants failed:', e);
         setError(e.message ?? String(e));
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     })();
+
+    return () => clearTimeout(timeout);
   }, []);
 
   if (loading) return <LoadingScreen />;

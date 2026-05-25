@@ -153,18 +153,51 @@ export function useAuth(): AuthState {
 }
 
 async function ensureProfile(user: User): Promise<ClientSaintCyp | null> {
-  const { data: existing, error: selectError } = await supabase
+  // 1. Lookup par auth_user_id (cas standard pour les comptes créés via le portail)
+  const { data: byAuthId, error: selectError } = await supabase
     .from('clients_saint_cyp')
     .select('*')
     .eq('auth_user_id', user.id)
     .maybeSingle();
 
   if (selectError) {
-    console.error('[portal] ensureProfile select failed:', selectError);
-    return null;
+    console.error('[portal] ensureProfile select by auth_user_id failed:', selectError);
   }
-  if (existing) return existing as ClientSaintCyp;
+  if (byAuthId) return byAuthId as ClientSaintCyp;
 
+  // 2. Fallback : trouver une ligne existante par email et la rattacher
+  //    (cas des fiches créées dans le wallet commerçant avant que le compte
+  //    Supabase Auth existe)
+  if (user.email) {
+    const { data: byEmail, error: emailError } = await supabase
+      .from('clients_saint_cyp')
+      .select('*')
+      .eq('email', user.email)
+      .is('auth_user_id', null)
+      .maybeSingle();
+
+    if (emailError) {
+      console.error('[portal] ensureProfile select by email failed:', emailError);
+    }
+
+    if (byEmail) {
+      console.info('[portal] ensureProfile: rattachement de la fiche existante', byEmail.id_pass_wallet);
+      const { data: linked, error: linkError } = await supabase
+        .from('clients_saint_cyp')
+        .update({ auth_user_id: user.id })
+        .eq('id_pass_wallet', byEmail.id_pass_wallet)
+        .select()
+        .single();
+
+      if (linkError) {
+        console.error('[portal] ensureProfile link failed:', linkError);
+        return byEmail as ClientSaintCyp;
+      }
+      return linked as ClientSaintCyp;
+    }
+  }
+
+  // 3. Création d'une nouvelle fiche
   const meta = (user.user_metadata ?? {}) as { nom?: string; telephone?: string };
   const passId =
     'PASS-CYP-' + user.id.replace(/-/g, '').substring(0, 8).toUpperCase();
@@ -185,7 +218,14 @@ async function ensureProfile(user: User): Promise<ClientSaintCyp | null> {
 
   if (insertError) {
     console.error('[portal] ensureProfile insert failed:', insertError);
-    return null;
+    // Race condition : si la ligne vient d'être créée par un autre tab/process,
+    // re-fetch par auth_user_id pour la récupérer.
+    const { data: retry } = await supabase
+      .from('clients_saint_cyp')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+    return (retry as ClientSaintCyp) ?? null;
   }
 
   return created as ClientSaintCyp;

@@ -20,7 +20,13 @@ export default function Orders() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!profile) {
+      // Pas encore de profile chargé → on n'affiche pas le LoadingScreen indéfiniment,
+      // on affiche l'état vide (ou il sera re-fetché dès que profile arrive).
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     (async () => {
       try {
         const list = await listOrdersForClient(profile.id_pass_wallet);
