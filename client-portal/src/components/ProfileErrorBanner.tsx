@@ -1,10 +1,21 @@
 import { useState } from 'react';
-import { AlertTriangle, RotateCw, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  AlertTriangle,
+  RotateCw,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  LogOut,
+} from 'lucide-react';
 import { useAuth } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 
 export function ProfileErrorBanner() {
   const { profileError, retryProfile, user } = useAuth();
+  const navigate = useNavigate();
   const [retrying, setRetrying] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   if (!profileError) return null;
@@ -14,6 +25,24 @@ export function ProfileErrorBanner() {
     await retryProfile();
     setRetrying(false);
   };
+
+  const handleHardReset = async () => {
+    setResetting(true);
+    try {
+      // Force Supabase to drop the cached JWT, then clear any leftover keys
+      await supabase.auth.signOut().catch(() => {});
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('sb-') || k === 'saint_cyp_portal_cart_v1')
+        .forEach((k) => localStorage.removeItem(k));
+      navigate('/connexion', { replace: true });
+      // Force a full reload so React state is reset cleanly
+      window.location.reload();
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const isTimeout = /timeout/i.test(profileError);
 
   return (
     <div className="bg-[var(--color-paprika)]/8 border border-[var(--color-paprika)]/30 rounded-3xl p-5 mb-6">
@@ -30,14 +59,31 @@ export function ProfileErrorBanner() {
             {profileError}
           </p>
 
+          {isTimeout && (
+            <p className="text-xs text-[var(--color-paprika)] mt-2 leading-relaxed">
+              <strong>Diagnostic probable :</strong> votre token de session est en
+              cache mais ne correspond plus à un utilisateur Supabase valide.
+              Cliquez sur <em>Réinitialiser ma session</em> pour repartir propre.
+            </p>
+          )}
+
           <div className="flex items-center gap-2 mt-3 flex-wrap">
             <button
               onClick={handleRetry}
-              disabled={retrying}
+              disabled={retrying || resetting}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] disabled:opacity-50 text-[var(--color-cream)] rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
             >
               <RotateCw className={`w-3 h-3 ${retrying ? 'animate-spin' : ''}`} />
               {retrying ? 'Nouvel essai…' : 'Réessayer'}
+            </button>
+
+            <button
+              onClick={handleHardReset}
+              disabled={retrying || resetting}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-paprika)] hover:bg-[var(--color-terracotta-dark)] disabled:opacity-50 text-[var(--color-cream)] rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3 h-3" />
+              {resetting ? 'Nettoyage…' : 'Réinitialiser ma session'}
             </button>
 
             <button
@@ -71,6 +117,7 @@ export function ProfileErrorBanner() {
                   <li>Le SQL de l'étape 2 n'a pas été exécuté sur ce projet Supabase</li>
                   <li>RLS bloque la création (vérifiez les policies sur clients_saint_cyp)</li>
                   <li>Une fiche existe déjà avec votre email — supprimez-la dans Table Editor</li>
+                  <li>Session JWT en cache pour un utilisateur supprimé — utilisez "Réinitialiser ma session"</li>
                 </ul>
                 <a
                   href="https://supabase.com/dashboard"

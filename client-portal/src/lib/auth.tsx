@@ -154,20 +154,43 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
+function withTimeout<T>(p: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      reject(new Error(`Timeout (${ms / 1000}s) sur ${label}. Probablement un token de session invalide ou un problème réseau.`));
+    }, ms);
+    Promise.resolve(p).then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      }
+    );
+  });
+}
+
 /**
  * Tente toute la chaîne possible pour obtenir une fiche client liée à l'utilisateur.
  * Retourne soit le profile, soit un message d'erreur explicite pour l'UI.
+ * Chaque appel Supabase est wrappé dans un timeout de 5s pour ne jamais pendre.
  */
 async function ensureProfileSafe(
   user: User
 ): Promise<{ profile?: ClientSaintCyp; error?: string }> {
   try {
     // 1. Lookup par auth_user_id (cas standard)
-    const r1 = await supabase
-      .from('clients_saint_cyp')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
+    const r1 = await withTimeout(
+      supabase
+        .from('clients_saint_cyp')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .maybeSingle(),
+      5000,
+      'SELECT clients_saint_cyp par auth_user_id'
+    );
 
     if (r1.error) {
       console.error('[portal] ensureProfile SELECT auth_user_id failed:', r1.error);
@@ -178,26 +201,33 @@ async function ensureProfileSafe(
     // 2. Lookup par email pour récupérer une fiche existante orpheline
     //    (créée via le wallet commerçant avant que le compte Auth existe)
     if (user.email) {
-      const r2 = await supabase
-        .from('clients_saint_cyp')
-        .select('*')
-        .eq('email', user.email)
-        .is('auth_user_id', null)
-        .maybeSingle();
+      const r2 = await withTimeout(
+        supabase
+          .from('clients_saint_cyp')
+          .select('*')
+          .eq('email', user.email)
+          .is('auth_user_id', null)
+          .maybeSingle(),
+        5000,
+        'SELECT clients_saint_cyp par email'
+      );
 
       if (!r2.error && r2.data) {
         console.info('[portal] ensureProfile: rattachement de la fiche', r2.data.id_pass_wallet);
-        const linked = await supabase
-          .from('clients_saint_cyp')
-          .update({ auth_user_id: user.id })
-          .eq('id_pass_wallet', r2.data.id_pass_wallet)
-          .select()
-          .maybeSingle();
+        const linked = await withTimeout(
+          supabase
+            .from('clients_saint_cyp')
+            .update({ auth_user_id: user.id })
+            .eq('id_pass_wallet', r2.data.id_pass_wallet)
+            .select()
+            .maybeSingle(),
+          5000,
+          'UPDATE clients_saint_cyp.auth_user_id'
+        );
 
         if (linked.data) return { profile: linked.data as ClientSaintCyp };
         if (linked.error) {
           console.error('[portal] ensureProfile link failed:', linked.error);
-          // Even if the link update silently failed, return the row we found
           return { profile: { ...r2.data, auth_user_id: user.id } as ClientSaintCyp };
         }
       }
@@ -216,26 +246,38 @@ async function ensureProfileSafe(
       auth_user_id: user.id,
     };
 
-    const inserted = await supabase.from('clients_saint_cyp').insert(row);
+    const inserted = await withTimeout(
+      supabase.from('clients_saint_cyp').insert(row),
+      5000,
+      'INSERT clients_saint_cyp'
+    );
 
     if (inserted.error) {
       console.error('[portal] ensureProfile INSERT failed:', inserted.error);
       // Race condition ou conflit → re-fetch
-      const retry = await supabase
-        .from('clients_saint_cyp')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .maybeSingle();
+      const retry = await withTimeout(
+        supabase
+          .from('clients_saint_cyp')
+          .select('*')
+          .eq('auth_user_id', user.id)
+          .maybeSingle(),
+        5000,
+        'SELECT clients_saint_cyp après conflit'
+      );
       if (retry.data) return { profile: retry.data as ClientSaintCyp };
       return { error: explainInsertError(inserted.error.message, inserted.error.code) };
     }
 
-    // Re-fetch après insert pour éviter de dépendre du .select() chaîné
-    const fresh = await supabase
-      .from('clients_saint_cyp')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .maybeSingle();
+    // Re-fetch après insert
+    const fresh = await withTimeout(
+      supabase
+        .from('clients_saint_cyp')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .maybeSingle(),
+      5000,
+      'SELECT clients_saint_cyp après insertion'
+    );
 
     if (fresh.data) return { profile: fresh.data as ClientSaintCyp };
 
@@ -245,7 +287,7 @@ async function ensureProfileSafe(
     };
   } catch (e: any) {
     console.error('[portal] ensureProfile unexpected error:', e);
-    return { error: `Erreur réseau : ${e.message ?? String(e)}` };
+    return { error: e.message ?? `Erreur réseau : ${String(e)}` };
   }
 }
 
