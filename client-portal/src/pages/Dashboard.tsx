@@ -1,29 +1,53 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
-  LogOut,
   CreditCard,
   ShoppingBasket,
   Store,
   Coins,
-  Sparkles,
+  ArrowRight,
+  Calendar,
+  Package,
+  ChevronRight,
 } from 'lucide-react';
-import { Logo } from '../components/Logo';
+import type { Commande, Commercant } from '@shared/types';
+import { STATUT_LABELS, formatPrixCents } from '@shared/types';
 import { useAuth } from '../lib/auth';
+import { listOrdersForClient } from '../lib/db';
+import { UserHeader } from '../components/UserHeader';
+import { formatSlotShort } from '../lib/marketSlots';
+
+type CommandeWithMerchant = Commande & {
+  commercant?: Pick<Commercant, 'id' | 'nom_enseigne'>;
+};
 
 export default function Dashboard() {
-  const { profile, user, signOut } = useAuth();
+  const { profile, user } = useAuth();
+  const [activeOrders, setActiveOrders] = useState<CommandeWithMerchant[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   const displayName = profile?.nom || user?.email?.split('@')[0] || 'Client';
-  const initials = displayName
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+
+  useEffect(() => {
+    if (!profile) return;
+    (async () => {
+      try {
+        const all = await listOrdersForClient(profile.id_pass_wallet);
+        setActiveOrders(
+          all.filter((o) => ['en_attente', 'confirmee', 'prete'].includes(o.statut))
+        );
+      } catch {
+        setActiveOrders([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    })();
+  }, [profile?.id_pass_wallet]);
 
   return (
     <div className="min-h-screen bg-paper text-[var(--color-wood)]">
-      <DashboardHeader displayName={displayName} initials={initials} onSignOut={signOut} />
+      <UserHeader />
 
       <main className="max-w-6xl mx-auto px-6 py-10 md:py-14 space-y-8">
         <section>
@@ -34,31 +58,58 @@ export default function Dashboard() {
             Bienvenue sur votre portail.
           </h1>
           <p className="text-sm text-[var(--color-taupe)] mt-2 max-w-2xl">
-            Votre compte est créé et votre pass de fidélité est prêt à être utilisé chez les
-            commerçants du marché.
+            Votre pass de fidélité est prêt — découvrez les commerçants du marché
+            et passez votre première commande.
           </p>
         </section>
 
         <PassCard profile={profile} email={user?.email ?? null} />
 
+        {/* Active orders preview */}
+        {!loadingOrders && activeOrders.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[var(--color-taupe)]">
+                Vos commandes en cours
+              </h2>
+              <Link
+                to="/commandes"
+                className="text-[11px] font-semibold text-[var(--color-olive-dark)] hover:text-[var(--color-olive-deep)] inline-flex items-center gap-1"
+              >
+                Voir tout
+                <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {activeOrders.slice(0, 2).map((o) => (
+                <ActiveOrderCard key={o.id} order={o} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Actions */}
         <section className="grid md:grid-cols-3 gap-4">
-          <ComingSoonCard
+          <ActionCard
+            to="/commercants"
             icon={<Store className="w-5 h-5" />}
             tint="var(--color-olive)"
-            title="Mes commerçants"
-            text="Bientôt : la liste de vos artisans préférés avec votre progression de points."
+            title="Le marché"
+            text="Parcourez les commerçants et leurs produits du moment."
           />
-          <ComingSoonCard
+          <ActionCard
+            to="/panier"
             icon={<ShoppingBasket className="w-5 h-5" />}
             tint="var(--color-terracotta)"
-            title="Mes commandes"
-            text="Bientôt : commandez en ligne, choisissez un créneau de retrait sur le marché."
+            title="Mon panier"
+            text="Reprenez votre panier en cours ou validez votre commande."
           />
-          <ComingSoonCard
+          <ActionCard
+            to="/commandes"
             icon={<Coins className="w-5 h-5" />}
             tint="var(--color-straw)"
             title="Mon historique"
-            text="Bientôt : retrouvez tous vos achats et points cumulés au fil des semaines."
+            text="Retrouvez vos commandes passées et à venir."
           />
         </section>
       </main>
@@ -66,47 +117,13 @@ export default function Dashboard() {
   );
 }
 
-function DashboardHeader({
-  displayName,
-  initials,
-  onSignOut,
+function PassCard({
+  profile,
+  email,
 }: {
-  displayName: string;
-  initials: string;
-  onSignOut: () => Promise<void>;
+  profile: ReturnType<typeof useAuth>['profile'];
+  email: string | null;
 }) {
-  return (
-    <header className="border-b border-[var(--color-shell)]/70 bg-[var(--color-cream)]/80 backdrop-blur-sm sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Logo to="/mon-compte" />
-
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2.5 pr-3 border-r border-[var(--color-shell)]">
-            <div className="w-9 h-9 rounded-full bg-[var(--color-olive)] text-[var(--color-cream)] flex items-center justify-center font-display font-semibold text-sm">
-              {initials || '·'}
-            </div>
-            <div className="leading-tight">
-              <p className="text-xs font-semibold text-[var(--color-wood)]">{displayName}</p>
-              <p className="text-[10px] uppercase tracking-wider text-[var(--color-taupe)] font-medium">
-                Connecté
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onSignOut}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[var(--color-wood-soft)] hover:text-[var(--color-paprika)] bg-[var(--color-shell)]/40 hover:bg-[var(--color-shell)] rounded-full transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Se déconnecter
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function PassCard({ profile, email }: { profile: ReturnType<typeof useAuth>['profile']; email: string | null }) {
   return (
     <div className="relative bg-gradient-to-br from-[var(--color-olive)] to-[var(--color-moss)] rounded-3xl p-7 md:p-8 shadow-xl shadow-[var(--color-olive-deep)]/20 overflow-hidden">
       <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-[var(--color-sage-light)]/20 blur-2xl" />
@@ -144,26 +161,64 @@ function Detail({ label, value, mono }: { label: string; value: string; mono?: b
       <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--color-cream)]/65 font-semibold mb-0.5">
         {label}
       </p>
-      <p className={`text-sm text-[var(--color-cream)] font-medium truncate ${mono ? 'font-mono' : ''}`}>
+      <p
+        className={`text-sm text-[var(--color-cream)] font-medium truncate ${
+          mono ? 'font-mono' : ''
+        }`}
+      >
         {value}
       </p>
     </div>
   );
 }
 
-function ComingSoonCard({
+function ActiveOrderCard({ order }: { order: CommandeWithMerchant }) {
+  return (
+    <Link
+      to={`/commandes/${order.id}`}
+      className="block bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+    >
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <p className="font-display text-sm font-semibold text-[var(--color-wood)] truncate">
+          {order.commercant?.nom_enseigne ?? 'Commerçant'}
+        </p>
+        <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-[var(--color-olive)] text-[var(--color-cream)] shrink-0">
+          {STATUT_LABELS[order.statut]}
+        </span>
+      </div>
+      <div className="flex items-center justify-between gap-3 text-[11px]">
+        {order.creneau_retrait && (
+          <span className="inline-flex items-center gap-1 text-[var(--color-taupe)]">
+            <Calendar className="w-3 h-3" />
+            {formatSlotShort(order.creneau_retrait)}
+          </span>
+        )}
+        <span className="font-display font-semibold text-[var(--color-wood)]">
+          {formatPrixCents(order.total_cents)}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function ActionCard({
+  to,
   icon,
   tint,
   title,
   text,
 }: {
+  to: string;
   icon: ReactNode;
   tint: string;
   title: string;
   text: string;
 }) {
   return (
-    <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-5 shadow-sm">
+    <Link
+      to={to}
+      className="group block bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+    >
       <div className="flex items-center justify-between mb-4">
         <div
           className="w-11 h-11 rounded-2xl flex items-center justify-center text-[var(--color-cream)]"
@@ -171,15 +226,12 @@ function ComingSoonCard({
         >
           {icon}
         </div>
-        <span className="text-[9px] uppercase tracking-[0.18em] font-semibold text-[var(--color-taupe)] flex items-center gap-1">
-          <Sparkles className="w-3 h-3" />
-          Bientôt
-        </span>
+        <ArrowRight className="w-4 h-4 text-[var(--color-taupe)] group-hover:translate-x-0.5 transition-transform" />
       </div>
-      <h3 className="font-display text-lg font-semibold text-[var(--color-wood)] mb-1.5">
+      <h3 className="font-display text-lg font-semibold text-[var(--color-wood)] mb-1.5 group-hover:text-[var(--color-olive-dark)] transition-colors">
         {title}
       </h3>
       <p className="text-xs text-[var(--color-taupe)] leading-relaxed">{text}</p>
-    </div>
+    </Link>
   );
 }
