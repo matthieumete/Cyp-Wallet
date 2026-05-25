@@ -30,17 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<ClientSaintCyp | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hydrate = async (currentSession: Session | null) => {
-    setSession(currentSession);
-    setUser(currentSession?.user ?? null);
-    if (currentSession?.user) {
-      const prof = await ensureProfile(currentSession.user);
-      setProfile(prof);
-    } else {
-      setProfile(null);
-    }
-  };
-
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setLoading(false);
@@ -49,15 +38,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    // Apply session synchronously, but let profile fetch happen in the
+    // background so the UI never blocks on a slow Supabase call.
+    const applySession = (sess: Session | null) => {
       if (!mounted) return;
-      await hydrate(data.session);
-      setLoading(false);
-    });
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        ensureProfile(sess.user)
+          .then((prof) => {
+            if (mounted) setProfile(prof);
+          })
+          .catch((e) => {
+            console.error('[portal] ensureProfile error:', e);
+            if (mounted) setProfile(null);
+          });
+      } else {
+        setProfile(null);
+      }
+    };
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, sess) => {
-      if (!mounted) return;
-      await hydrate(sess);
+    const init = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        applySession(data.session);
+      } catch (e) {
+        console.error('[portal] getSession error:', e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, sess) => {
+      applySession(sess);
     });
 
     return () => {
