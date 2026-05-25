@@ -4,7 +4,7 @@ import { Store, ArrowRight, MapPin, Sun } from 'lucide-react';
 import type { Commercant } from '@shared/types';
 import { listMerchants, listCategoriesByMerchant } from '../lib/db';
 import { UserHeader } from '../components/UserHeader';
-import { LoadingScreen } from '../components/ProtectedRoute';
+import { ProfileErrorBanner } from '../components/ProfileErrorBanner';
 
 export default function Merchants() {
   const [merchants, setMerchants] = useState<Commercant[]>([]);
@@ -37,13 +37,13 @@ export default function Merchants() {
     return () => clearTimeout(timeout);
   }, []);
 
-  if (loading) return <LoadingScreen />;
-
   return (
     <div className="min-h-screen bg-paper">
       <UserHeader />
 
       <main className="max-w-6xl mx-auto px-6 py-10 md:py-14">
+        <ProfileErrorBanner />
+
         <header className="mb-10">
           <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--color-olive-dark)] font-semibold mb-2">
             <Store className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
@@ -73,7 +73,16 @@ export default function Merchants() {
           </div>
         )}
 
-        {merchants.length === 0 ? (
+        {loading ? (
+          <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-12 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-[var(--color-shell)] border-t-[var(--color-olive)] rounded-full animate-spin" />
+              <p className="text-xs font-semibold text-[var(--color-taupe)]">
+                Chargement des commerçants…
+              </p>
+            </div>
+          </div>
+        ) : merchants.length === 0 ? (
           <EmptyMerchants />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">

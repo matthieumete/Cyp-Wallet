@@ -14,12 +14,13 @@ export interface AuthState {
   user: User | null;
   session: Session | null;
   profile: ClientSaintCyp | null;
+  profileError: string | null;
   loading: boolean;
   isConfigured: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (input: SignUpInput) => Promise<{ error?: string; needsConfirmation?: boolean }>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+  retryProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -28,7 +29,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ClientSaintCyp | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const loadProfile = async (u: User) => {
+    setProfileError(null);
+    const res = await ensureProfileSafe(u);
+    if (res.profile) {
+      setProfile(res.profile);
+    } else {
+      setProfile(null);
+      setProfileError(res.error ?? 'Impossible de créer ou retrouver votre fiche client.');
+    }
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -38,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
-    // Hard timeout safety net: never block the UI more than 3s on auth init.
     const timeout = setTimeout(() => {
       if (mounted) {
         console.warn('[portal] auth init timeout, sortie forcée du chargement');
@@ -46,24 +58,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }, 3000);
 
-    // Apply session synchronously, but let profile fetch happen in the
-    // background so the UI never blocks on a slow Supabase call.
     const applySession = (sess: Session | null) => {
       if (!mounted) return;
       setSession(sess);
       setUser(sess?.user ?? null);
       setLoading(false);
       if (sess?.user) {
-        ensureProfile(sess.user)
-          .then((prof) => {
-            if (mounted) setProfile(prof);
-          })
-          .catch((e) => {
-            console.error('[portal] ensureProfile error:', e);
-            if (mounted) setProfile(null);
-          });
+        loadProfile(sess.user);
       } else {
         setProfile(null);
+        setProfileError(null);
       }
     };
 
@@ -120,11 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  const refreshProfile = async () => {
-    if (user) {
-      const prof = await ensureProfile(user);
-      setProfile(prof);
-    }
+  const retryProfile = async () => {
+    if (user) await loadProfile(user);
   };
 
   return (
@@ -133,12 +134,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         profile,
+        profileError,
         loading,
         isConfigured: isSupabaseConfigured,
         signIn,
         signUp,
         signOut,
-        refreshProfile,
+        retryProfile,
       }}
     >
       {children}
@@ -152,83 +154,122 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
-async function ensureProfile(user: User): Promise<ClientSaintCyp | null> {
-  // 1. Lookup par auth_user_id (cas standard pour les comptes créés via le portail)
-  const { data: byAuthId, error: selectError } = await supabase
-    .from('clients_saint_cyp')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .maybeSingle();
-
-  if (selectError) {
-    console.error('[portal] ensureProfile select by auth_user_id failed:', selectError);
-  }
-  if (byAuthId) return byAuthId as ClientSaintCyp;
-
-  // 2. Fallback : trouver une ligne existante par email et la rattacher
-  //    (cas des fiches créées dans le wallet commerçant avant que le compte
-  //    Supabase Auth existe)
-  if (user.email) {
-    const { data: byEmail, error: emailError } = await supabase
-      .from('clients_saint_cyp')
-      .select('*')
-      .eq('email', user.email)
-      .is('auth_user_id', null)
-      .maybeSingle();
-
-    if (emailError) {
-      console.error('[portal] ensureProfile select by email failed:', emailError);
-    }
-
-    if (byEmail) {
-      console.info('[portal] ensureProfile: rattachement de la fiche existante', byEmail.id_pass_wallet);
-      const { data: linked, error: linkError } = await supabase
-        .from('clients_saint_cyp')
-        .update({ auth_user_id: user.id })
-        .eq('id_pass_wallet', byEmail.id_pass_wallet)
-        .select()
-        .single();
-
-      if (linkError) {
-        console.error('[portal] ensureProfile link failed:', linkError);
-        return byEmail as ClientSaintCyp;
-      }
-      return linked as ClientSaintCyp;
-    }
-  }
-
-  // 3. Création d'une nouvelle fiche
-  const meta = (user.user_metadata ?? {}) as { nom?: string; telephone?: string };
-  const passId =
-    'PASS-CYP-' + user.id.replace(/-/g, '').substring(0, 8).toUpperCase();
-
-  const row = {
-    id_pass_wallet: passId,
-    nom: meta.nom?.trim() || user.email?.split('@')[0] || 'Client',
-    email: user.email ?? null,
-    telephone: meta.telephone || null,
-    auth_user_id: user.id,
-  };
-
-  const { data: created, error: insertError } = await supabase
-    .from('clients_saint_cyp')
-    .insert(row)
-    .select()
-    .single();
-
-  if (insertError) {
-    console.error('[portal] ensureProfile insert failed:', insertError);
-    // Race condition : si la ligne vient d'être créée par un autre tab/process,
-    // re-fetch par auth_user_id pour la récupérer.
-    const { data: retry } = await supabase
+/**
+ * Tente toute la chaîne possible pour obtenir une fiche client liée à l'utilisateur.
+ * Retourne soit le profile, soit un message d'erreur explicite pour l'UI.
+ */
+async function ensureProfileSafe(
+  user: User
+): Promise<{ profile?: ClientSaintCyp; error?: string }> {
+  try {
+    // 1. Lookup par auth_user_id (cas standard)
+    const r1 = await supabase
       .from('clients_saint_cyp')
       .select('*')
       .eq('auth_user_id', user.id)
       .maybeSingle();
-    return (retry as ClientSaintCyp) ?? null;
-  }
 
-  return created as ClientSaintCyp;
+    if (r1.error) {
+      console.error('[portal] ensureProfile SELECT auth_user_id failed:', r1.error);
+      return { error: explainSelectError(r1.error.message, r1.error.code) };
+    }
+    if (r1.data) return { profile: r1.data as ClientSaintCyp };
+
+    // 2. Lookup par email pour récupérer une fiche existante orpheline
+    //    (créée via le wallet commerçant avant que le compte Auth existe)
+    if (user.email) {
+      const r2 = await supabase
+        .from('clients_saint_cyp')
+        .select('*')
+        .eq('email', user.email)
+        .is('auth_user_id', null)
+        .maybeSingle();
+
+      if (!r2.error && r2.data) {
+        console.info('[portal] ensureProfile: rattachement de la fiche', r2.data.id_pass_wallet);
+        const linked = await supabase
+          .from('clients_saint_cyp')
+          .update({ auth_user_id: user.id })
+          .eq('id_pass_wallet', r2.data.id_pass_wallet)
+          .select()
+          .maybeSingle();
+
+        if (linked.data) return { profile: linked.data as ClientSaintCyp };
+        if (linked.error) {
+          console.error('[portal] ensureProfile link failed:', linked.error);
+          // Even if the link update silently failed, return the row we found
+          return { profile: { ...r2.data, auth_user_id: user.id } as ClientSaintCyp };
+        }
+      }
+    }
+
+    // 3. Création d'une nouvelle fiche
+    const meta = (user.user_metadata ?? {}) as { nom?: string; telephone?: string };
+    const passId =
+      'PASS-CYP-' + user.id.replace(/-/g, '').substring(0, 8).toUpperCase();
+
+    const row = {
+      id_pass_wallet: passId,
+      nom: meta.nom?.trim() || user.email?.split('@')[0] || 'Client',
+      email: user.email ?? null,
+      telephone: meta.telephone || null,
+      auth_user_id: user.id,
+    };
+
+    const inserted = await supabase.from('clients_saint_cyp').insert(row);
+
+    if (inserted.error) {
+      console.error('[portal] ensureProfile INSERT failed:', inserted.error);
+      // Race condition ou conflit → re-fetch
+      const retry = await supabase
+        .from('clients_saint_cyp')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .maybeSingle();
+      if (retry.data) return { profile: retry.data as ClientSaintCyp };
+      return { error: explainInsertError(inserted.error.message, inserted.error.code) };
+    }
+
+    // Re-fetch après insert pour éviter de dépendre du .select() chaîné
+    const fresh = await supabase
+      .from('clients_saint_cyp')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .maybeSingle();
+
+    if (fresh.data) return { profile: fresh.data as ClientSaintCyp };
+
+    return {
+      error:
+        'La fiche a été créée mais la relecture est vide. Vérifiez les politiques RLS de SELECT sur la table `clients_saint_cyp`.',
+    };
+  } catch (e: any) {
+    console.error('[portal] ensureProfile unexpected error:', e);
+    return { error: `Erreur réseau : ${e.message ?? String(e)}` };
+  }
+}
+
+function explainSelectError(message: string, code?: string): string {
+  if (code === '42P01' || /relation .* does not exist/i.test(message)) {
+    return "La table `clients_saint_cyp` n'existe pas. Avez-vous exécuté le SQL de l'étape 2 dans Supabase ?";
+  }
+  if (code === '42703' || /column .* does not exist/i.test(message)) {
+    return "La colonne `auth_user_id` n'existe pas sur `clients_saint_cyp`. Exécutez (ou ré-exécutez) le SQL de migration de l'étape 2.";
+  }
+  return `Lecture impossible : ${message}`;
+}
+
+function explainInsertError(message: string, code?: string): string {
+  if (code === '42501' || /row-level security/i.test(message)) {
+    return "Politique RLS bloquante sur INSERT clients_saint_cyp. Vérifiez que les policies 'Clients self insert' ou 'Allow public all on clients' existent.";
+  }
+  if (code === '23505' || /duplicate key/i.test(message)) {
+    return 'Conflit : une fiche existe déjà avec ce pass ou cet auth_user_id. Supprimez les doublons dans Supabase Table Editor.';
+  }
+  if (code === '23503' || /foreign key/i.test(message)) {
+    return 'Contrainte FK : votre auth_user_id ne référence pas un utilisateur valide. Déconnectez-vous, supprimez votre utilisateur dans Auth → Users, et recréez un compte.';
+  }
+  return `Création impossible : ${message}`;
 }
 
 function translateAuthError(message: string): string {

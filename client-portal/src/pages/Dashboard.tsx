@@ -16,6 +16,7 @@ import { STATUT_LABELS, formatPrixCents } from '@shared/types';
 import { useAuth } from '../lib/auth';
 import { listOrdersForClient } from '../lib/db';
 import { UserHeader } from '../components/UserHeader';
+import { ProfileErrorBanner } from '../components/ProfileErrorBanner';
 import { formatSlotShort } from '../lib/marketSlots';
 
 type CommandeWithMerchant = Commande & {
@@ -50,6 +51,8 @@ export default function Dashboard() {
       <UserHeader />
 
       <main className="max-w-6xl mx-auto px-6 py-10 md:py-14 space-y-8">
+        <ProfileErrorBanner />
+
         <section>
           <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--color-olive-dark)] font-semibold mb-2">
             Bonjour {displayName.split(' ')[0]}

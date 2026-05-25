@@ -6,7 +6,7 @@ import { STATUT_LABELS, formatPrixCents } from '@shared/types';
 import { listOrdersForClient } from '../lib/db';
 import { useAuth } from '../lib/auth';
 import { UserHeader } from '../components/UserHeader';
-import { LoadingScreen } from '../components/ProtectedRoute';
+import { ProfileErrorBanner } from '../components/ProfileErrorBanner';
 import { formatSlotShort } from '../lib/marketSlots';
 
 type CommandeWithMerchant = Commande & {
@@ -39,8 +39,6 @@ export default function Orders() {
     })();
   }, [profile?.id_pass_wallet]);
 
-  if (loading) return <LoadingScreen />;
-
   const active = orders.filter((o) =>
     ['en_attente', 'confirmee', 'prete'].includes(o.statut)
   );
@@ -51,6 +49,8 @@ export default function Orders() {
       <UserHeader />
 
       <main className="max-w-4xl mx-auto px-6 py-10 md:py-14">
+        <ProfileErrorBanner />
+
         <header className="mb-10">
           <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--color-olive-dark)] font-semibold mb-2">
             <ScrollText className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
@@ -67,7 +67,16 @@ export default function Orders() {
           </div>
         )}
 
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-12 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-[var(--color-shell)] border-t-[var(--color-olive)] rounded-full animate-spin" />
+              <p className="text-xs font-semibold text-[var(--color-taupe)]">
+                Chargement de vos commandes…
+              </p>
+            </div>
+          </div>
+        ) : orders.length === 0 ? (
           <EmptyOrders />
         ) : (
           <div className="space-y-8">

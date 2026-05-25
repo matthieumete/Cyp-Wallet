@@ -18,6 +18,7 @@ import { useAuth } from '../lib/auth';
 import { getMerchant, placeOrder } from '../lib/db';
 import { getNextMarketSlots, MarketSlot } from '../lib/marketSlots';
 import { UserHeader } from '../components/UserHeader';
+import { ProfileErrorBanner } from '../components/ProfileErrorBanner';
 
 export default function Cart() {
   const { cart, itemCount, totalCents, setQuantity, removeItem, clear } = useCart();
@@ -106,6 +107,8 @@ export default function Cart() {
       <UserHeader />
 
       <main className="max-w-3xl mx-auto px-6 py-8 md:py-12">
+        <ProfileErrorBanner />
+
         <Link
           to={`/commercants/${cart.commercantId}`}
           className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-taupe)] hover:text-[var(--color-wood)] mb-4 transition-colors"

@@ -14,7 +14,7 @@ import { formatPrixCents } from '@shared/types';
 import { getMerchant, listProduitsAvailable } from '../lib/db';
 import { useCart } from '../lib/cart';
 import { UserHeader } from '../components/UserHeader';
-import { LoadingScreen } from '../components/ProtectedRoute';
+import { ProfileErrorBanner } from '../components/ProfileErrorBanner';
 
 export default function MerchantDetail() {
   const { id } = useParams<{ id: string }>();
@@ -26,17 +26,24 @@ export default function MerchantDetail() {
 
   useEffect(() => {
     if (!id) return;
+    const timeout = setTimeout(() => {
+      setError("Le chargement met trop de temps. Vérifiez votre connexion.");
+      setLoading(false);
+    }, 8000);
     (async () => {
       try {
         const [m, p] = await Promise.all([getMerchant(id), listProduitsAvailable(id)]);
         setMerchant(m);
         setProduits(p);
       } catch (e: any) {
+        console.error('[portal] MerchantDetail load failed:', e);
         setError(e.message ?? String(e));
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     })();
+    return () => clearTimeout(timeout);
   }, [id]);
 
   const categories = useMemo(() => {
@@ -50,7 +57,23 @@ export default function MerchantDetail() {
     return produits.filter((p) => p.categorie === activeCategory);
   }, [produits, activeCategory]);
 
-  if (loading) return <LoadingScreen />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-paper">
+        <UserHeader />
+        <main className="max-w-6xl mx-auto px-6 py-12">
+          <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-12 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-[var(--color-shell)] border-t-[var(--color-olive)] rounded-full animate-spin" />
+              <p className="text-xs font-semibold text-[var(--color-taupe)]">
+                Chargement du commerçant…
+              </p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   if (error)
     return (
       <ErrorScreen message={`Erreur lors du chargement : ${error}`} />
@@ -62,6 +85,8 @@ export default function MerchantDetail() {
       <UserHeader />
 
       <main className="max-w-6xl mx-auto px-6 py-8 md:py-12">
+        <ProfileErrorBanner />
+
         <Link
           to="/commercants"
           className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-taupe)] hover:text-[var(--color-wood)] mb-6 transition-colors"
