@@ -11,26 +11,47 @@ if (!isSupabaseConfigured) {
   );
 }
 
-// Stub client when env vars are missing — keeps types happy and avoids
-// runtime crashes on page load. All auth calls will surface a clear error
-// via the `isConfigured` guard in the AuthProvider.
+/**
+ * Stub client utilisé tant que les variables d'env Supabase ne sont pas
+ * configurées. Toute requête se résout immédiatement en erreur claire,
+ * de sorte que l'UI affiche un message au lieu de pendre.
+ */
 function createStubClient(): SupabaseClient {
   const error = new Error('Supabase non configuré : ajoutez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY au .env.');
-  const fail = async () => ({ data: null, error });
+  const failResult = { data: null, error } as const;
+
+  // Proxy thenable qui accepte n'importe quelle chaîne de méthodes PostgREST
+  // (.select().eq().eq().order().maybeSingle() etc.) et se résout en erreur.
+  const makeBuilder = (): any => {
+    const handler: ProxyHandler<any> = {
+      get(_target, prop) {
+        if (prop === 'then') {
+          return (onFulfilled: any) => Promise.resolve(onFulfilled(failResult));
+        }
+        if (prop === Symbol.toPrimitive || prop === 'toString') {
+          return () => '[stub query builder]';
+        }
+        return () => makeBuilder();
+      },
+      apply() {
+        return makeBuilder();
+      },
+    };
+    return new Proxy(function () {}, handler);
+  };
+
   return {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({
         data: { subscription: { unsubscribe: () => {} } },
       }),
-      signInWithPassword: fail,
-      signUp: fail,
+      signInWithPassword: async () => failResult,
+      signUp: async () => failResult,
       signOut: async () => ({ error: null }),
+      getUser: async () => failResult,
     },
-    from: () => ({
-      select: () => ({ eq: () => ({ maybeSingle: fail }) }),
-      insert: () => ({ select: () => ({ single: fail }) }),
-    }),
+    from: () => makeBuilder(),
   } as unknown as SupabaseClient;
 }
 
