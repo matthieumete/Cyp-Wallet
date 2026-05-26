@@ -722,6 +722,41 @@ export class DbManager {
     }
   }
 
+  // ───────────────────────────── Invitation client ─────────────────────────────
+  // Envoie un magic link à l'email du client. Au clic, le client est redirigé
+  // vers le portail (/definir-mdp) pour définir son mot de passe.
+  public static async inviteClient(
+    email: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = this.getSupabaseClient();
+    if (!supabase) {
+      return {
+        success: false,
+        error: 'Supabase non configuré : impossible d\'envoyer un email.',
+      };
+    }
+
+    // @ts-ignore - variable d'env Vite
+    const portalUrl = (import.meta.env.VITE_PORTAL_URL as string | undefined)?.replace(/\/$/, '')
+      || (typeof window !== 'undefined'
+          ? `${window.location.protocol}//${window.location.hostname}:3001`
+          : 'http://localhost:3001');
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${portalUrl}/definir-mdp`,
+        },
+      });
+      if (error) throw error;
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || String(e) };
+    }
+  }
+
   // 7. Get All Registered Clients
   public static async getAllClients(): Promise<ClientSaintCyp[]> {
     const supabase = this.getSupabaseClient();

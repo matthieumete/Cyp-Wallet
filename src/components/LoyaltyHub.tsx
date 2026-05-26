@@ -1,10 +1,9 @@
-import { useState, useEffect, startTransition, FormEvent, useRef } from 'react';
+import { useState, useEffect, startTransition, FormEvent } from 'react';
 import { Commercant, CagnotteSaintCyp, TransactionHistory, ClientSaintCyp } from '../types';
 import { DbManager } from '../db';
-import { Award, CreditCard, ChevronRight, CheckCircle2, Ticket, ArrowUpRight, History, Coins, Undo, UserCheck, User, Mail, Phone, ShieldCheck, Download, Share2, Copy, Check } from 'lucide-react';
+import { Award, CreditCard, ChevronRight, CheckCircle2, Ticket, ArrowUpRight, History, Coins, Undo, UserCheck, User, Mail, Phone, ShieldCheck, MailCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShinyButton } from './ui/shiny-button';
-import QRCode from 'qrcode';
 
 interface LoyaltyHubProps {
   idPassWallet: string;
@@ -26,74 +25,16 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
   const [registerName, setRegisterName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPhone, setRegisterPhone] = useState('');
-  
-  // QR Modal States
-  const [createdClientPass, setCreatedClientPass] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Modale de confirmation d'envoi du magic link
+  const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
+  const [inviteWarning, setInviteWarning] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCagnotte();
     fetchHistory();
     fetchClient();
   }, [idPassWallet, merchant.id]);
-
-  useEffect(() => {
-    if (createdClientPass && qrCanvasRef.current) {
-      QRCode.toCanvas(
-        qrCanvasRef.current,
-        createdClientPass,
-        {
-          width: 240,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#ffffff',
-          },
-        },
-        (error) => {
-          if (error) console.error('Error generating QR code:', error);
-        }
-      );
-    }
-  }, [createdClientPass]);
-
-  const handleDownloadQr = () => {
-    if (!qrCanvasRef.current || !createdClientPass) return;
-    try {
-      const link = document.createElement('a');
-      link.download = `pass-${createdClientPass.toLowerCase()}.png`;
-      link.href = qrCanvasRef.current.toDataURL('image/png');
-      link.click();
-    } catch (e) {
-      console.error('Error downloading QR code:', e);
-    }
-  };
-
-  const handleCopyText = () => {
-    if (!createdClientPass) return;
-    navigator.clipboard.writeText(createdClientPass);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleShareQr = async () => {
-    if (!createdClientPass) return;
-    const shareData = {
-      title: "Mon Pass Saint-Cyp Fidélité",
-      text: `Voici mon Pass Fidélité Commerçant Saint-Cyprien. Mon identifiant : ${createdClientPass}`,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log('Error sharing:', err);
-        handleCopyText();
-      }
-    } else {
-      handleCopyText();
-    }
-  };
 
   const fetchCagnotte = async () => {
     setLoading(true);
@@ -122,23 +63,40 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       alert('Veuillez spécifier le nom du client.');
       return;
     }
+    const email = registerEmail.trim();
+    if (!email) {
+      alert("L'email est requis : un lien de connexion sera envoyé au client.");
+      return;
+    }
 
     setIsSubmitting(true);
+    setInviteWarning(null);
+
     const res = await DbManager.registerClient({
       id_pass_wallet: idPassWallet,
       nom: registerName.trim(),
-      email: registerEmail.trim() || undefined,
-      telephone: registerPhone.trim() || undefined
+      email,
+      telephone: registerPhone.trim() || undefined,
     });
+
+    if (!res.success || !res.data) {
+      setIsSubmitting(false);
+      alert("Erreur lors de l'enregistrement de la fiche client: " + (res.error || 'Erreur inconnue'));
+      return;
+    }
+
+    setClient(res.data);
+    onTransactionComplete();
+
+    // Envoi du magic link au client pour qu'il définisse son mot de passe.
+    const invite = await DbManager.inviteClient(email);
     setIsSubmitting(false);
 
-    if (res.success && res.data) {
-      setClient(res.data);
-      setCreatedClientPass(idPassWallet);
-      onTransactionComplete();
-    } else {
-      alert("Erreur lors de l'enregistrement de la fiche client: " + (res.error || 'Erreur inconnue'));
+    if (!invite.success) {
+      // La fiche est créée, mais le mail a échoué : on prévient sans bloquer.
+      setInviteWarning(invite.error ?? "L'envoi du lien de connexion a échoué.");
     }
+    setInvitedEmail(email);
   };
 
   const fetchHistory = () => {
@@ -231,9 +189,9 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
 
   return (
     <div className="space-y-6" id="loyalty-hub-container">
-      {/* QR Code Creation Modal */}
+      {/* Confirmation : magic link envoyé au client */}
       <AnimatePresence>
-        {createdClientPass && (
+        {invitedEmail && (
           <div className="fixed inset-0 bg-[var(--color-wood)]/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -243,60 +201,37 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-olive)]/30 via-[var(--color-olive)] to-[var(--color-olive)]/30" />
 
-              <div className="w-12 h-12 rounded-2xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-olive-deep)] mx-auto mb-4">
-                <CheckCircle2 className="w-6 h-6 animate-pulse" />
+              <div className="w-14 h-14 rounded-2xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-olive-deep)] mx-auto mb-4">
+                <MailCheck className="w-7 h-7" />
               </div>
 
               <h3 className="text-base font-display font-extrabold text-[var(--color-wood)] tracking-tight uppercase">
-                Fiche Client Créée !
+                Lien de connexion envoyé
               </h3>
               <p className="text-xs text-[var(--color-taupe)] mt-1.5 px-2 leading-relaxed">
-                Le pass de fidélité a été rattaché avec succès. Présentez ou téléchargez ce QR code pour l'ajouter au smartphone du client.
+                Un email vient d'être envoyé à votre client. Il pourra créer son mot de passe et accéder à son portail.
               </p>
 
-              {/* QR Code Render Area */}
-              <div className="my-6 bg-white p-3 rounded-2xl inline-block shadow-inner border border-[var(--color-shell)] mx-auto">
-                <canvas ref={qrCanvasRef} className="w-[180px] h-[180px] block" />
-              </div>
-
-              <div className="mb-4">
-                <p className="text-xs font-mono font-bold text-[var(--color-wood)] tracking-wider bg-[var(--color-sand)] px-3 py-1.5 rounded-xl border border-[var(--color-shell)] inline-block">
-                  {createdClientPass}
+              <div className="my-5">
+                <p className="text-xs font-mono font-bold text-[var(--color-wood)] tracking-wider bg-[var(--color-sand)] px-3 py-2 rounded-xl border border-[var(--color-shell)] inline-flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-[var(--color-olive)]" />
+                  {invitedEmail}
                 </p>
               </div>
 
-              {/* Operations row */}
-              <div className="grid grid-cols-2 gap-2.5 mt-5 mb-5">
-                <button
-                  type="button"
-                  onClick={handleDownloadQr}
-                  className="px-3 py-2.5 bg-[var(--color-sand)] hover:bg-[var(--color-shell)] border border-[var(--color-shell)] text-[var(--color-wood-soft)] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4" />
-                  Télécharger
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShareQr}
-                  className="px-3 py-2.5 bg-[var(--color-sand)] hover:bg-[var(--color-shell)] border border-[var(--color-shell)] text-[var(--color-wood-soft)] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 text-[var(--color-olive)]" />
-                      Copié !
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-4 h-4" />
-                      Partager
-                    </>
-                  )}
-                </button>
-              </div>
+              {inviteWarning && (
+                <div className="mb-4 p-3 bg-[var(--color-paprika)]/10 border border-[var(--color-paprika)]/30 rounded-xl text-[10px] text-[var(--color-paprika)] text-left leading-relaxed">
+                  <strong className="block uppercase tracking-wider mb-1">Avertissement</strong>
+                  La fiche client est créée, mais l'envoi du mail a échoué : {inviteWarning}
+                </div>
+              )}
 
               <ShinyButton
                 type="button"
-                onClick={() => setCreatedClientPass(null)}
+                onClick={() => {
+                  setInvitedEmail(null);
+                  setInviteWarning(null);
+                }}
                 className="w-full"
               >
                 Fermer & Continuer
@@ -525,15 +460,19 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
 
               <div>
                 <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
-                  Adresse Email
+                  Adresse Email <span className="text-[var(--color-paprika)] font-bold">*</span>
                 </label>
                 <input
                   type="email"
+                  required
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                   placeholder="Ex: jean.dupont@gmail.com"
                   className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                 />
+                <p className="text-[10px] text-[var(--color-taupe)] mt-1.5 leading-relaxed">
+                  Un lien de connexion sera envoyé à cette adresse pour que le client crée son mot de passe.
+                </p>
               </div>
 
               <ShinyButton
@@ -541,7 +480,7 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                 disabled={isSubmitting}
                 className="w-full"
               >
-                Créer la Fiche Client Coordonnées
+                {isSubmitting ? 'Envoi du lien…' : 'Créer la fiche & envoyer le lien'}
               </ShinyButton>
             </form>
           </div>

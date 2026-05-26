@@ -11,6 +11,7 @@ import MerchantDetail from './pages/MerchantDetail';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
+import SetPassword from './pages/SetPassword';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/connexion" element={<Login />} />
             <Route path="/inscription" element={<SignUp />} />
+            <Route path="/definir-mdp" element={<SetPassword />} />
             <Route
               path="/mon-compte"
               element={
