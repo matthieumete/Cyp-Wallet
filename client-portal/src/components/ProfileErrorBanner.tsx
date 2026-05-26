@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   RotateCw,
@@ -9,11 +8,9 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { supabase } from '../lib/supabase';
 
 export function ProfileErrorBanner() {
   const { profileError, retryProfile, user } = useAuth();
-  const navigate = useNavigate();
   const [retrying, setRetrying] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -26,19 +23,26 @@ export function ProfileErrorBanner() {
     setRetrying(false);
   };
 
-  const handleHardReset = async () => {
+  const handleHardReset = () => {
     setResetting(true);
     try {
-      // Force Supabase to drop the cached JWT, then clear any leftover keys
-      await supabase.auth.signOut().catch(() => {});
-      Object.keys(localStorage)
-        .filter((k) => k.startsWith('sb-') || k === 'saint_cyp_portal_cart_v1')
-        .forEach((k) => localStorage.removeItem(k));
-      navigate('/connexion', { replace: true });
-      // Force a full reload so React state is reset cleanly
-      window.location.reload();
+      // Clear all Supabase + portal keys synchronously. We *do not* await
+      // supabase.auth.signOut() because in the broken-JWT state it can
+      // hang forever — same reason we're here in the first place.
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('sb-') || k.startsWith('saint_cyp_') || k.startsWith('supabase.')) {
+          localStorage.removeItem(k);
+        }
+      });
+      try {
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
     } finally {
-      setResetting(false);
+      // Hard reload to /connexion. This kills any in-flight Supabase requests
+      // and resets the entire React tree from a clean storage state.
+      window.location.href = '/connexion';
     }
   };
 
