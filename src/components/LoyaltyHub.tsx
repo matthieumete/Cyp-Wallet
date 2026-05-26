@@ -446,59 +446,59 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Client Profile Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-            <UserCheck className="w-4 h-4 text-slate-300" />
+          <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 uppercase">
+            <UserCheck className="w-4 h-4 text-[var(--color-olive)]" />
             Fiche Client Coordonnées
           </h3>
           {client ? (
-            <span className="text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-white" />
+            <span className="text-[9px] font-bold text-[var(--color-cream)] bg-[var(--color-olive)] border border-[var(--color-olive-dark)] px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-[var(--color-cream)]" />
               Compte Enregistré
             </span>
           ) : (
-            <span className="text-[9px] font-bold text-slate-400 bg-slate-808/60 border border-slate-700 px-2.5 py-1 rounded-full uppercase font-mono">
+            <span className="text-[9px] font-bold text-[var(--color-taupe)] bg-[var(--color-sand)] border border-[var(--color-shell)] px-2.5 py-1 rounded-full uppercase font-mono">
               Non Renseigné
             </span>
           )}
         </div>
 
         {client ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-850">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-sand)] p-4 rounded-2xl border border-[var(--color-shell)]">
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <User className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Nom Complet
               </span>
-              <p className="text-xs text-white font-semibold mt-1">{client.nom}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1">{client.nom}</p>
             </div>
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Adresse Email
               </span>
-              <p className="text-xs text-white font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
             </div>
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Téléphone
               </span>
-              <p className="text-xs text-white font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-[var(--color-taupe)] leading-relaxed">
               Ce pass d'identification n'est pas encore associé à une fiche client. Enregistrez les coordonnées ci-dessous pour mieux le fidéliser.
             </p>
-            
-            <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-850">
+
+            <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-[var(--color-sand)]/60 p-4 rounded-2xl border border-[var(--color-shell)]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                    Nom Complet du client <span className="text-white font-bold">*</span>
+                  <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
+                    Nom Complet du client <span className="text-[var(--color-paprika)] font-bold">*</span>
                   </label>
                   <input
                     type="text"
@@ -506,11 +506,11 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
                     placeholder="Ex: Jean Dupont"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+                    className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                  <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
                     Numéro de Téléphone
                   </label>
                   <input
@@ -518,13 +518,13 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                     value={registerPhone}
                     onChange={(e) => setRegisterPhone(e.target.value)}
                     placeholder="Ex: 06 12 34 56 78"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                    className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
                   Adresse Email
                 </label>
                 <input
@@ -532,7 +532,7 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                   placeholder="Ex: jean.dupont@gmail.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                 />
               </div>
 
