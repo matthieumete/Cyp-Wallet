@@ -47,6 +47,7 @@ function createStubClient(): SupabaseClient {
         data: { subscription: { unsubscribe: () => {} } },
       }),
       signInWithPassword: async () => failResult,
+      signInWithOAuth: async () => failResult,
       signUp: async () => failResult,
       signOut: async () => ({ error: null }),
       getUser: async () => failResult,

@@ -19,6 +19,7 @@ export interface AuthState {
   isConfigured: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (input: SignUpInput) => Promise<{ error?: string; needsConfirmation?: boolean }>;
+  signInWithGoogle: () => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   retryProfile: () => Promise<void>;
 }
@@ -121,6 +122,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
+  const signInWithGoogle: AuthState['signInWithGoogle'] = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/mon-compte`,
+      },
+    });
+    if (error) return { error: translateAuthError(error.message) };
+    return {};
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -140,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isConfigured: isSupabaseConfigured,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
         retryProfile,
       }}
@@ -235,13 +248,25 @@ async function ensureProfileSafe(
     }
 
     // 3. Création d'une nouvelle fiche
-    const meta = (user.user_metadata ?? {}) as { nom?: string; telephone?: string };
+    const meta = (user.user_metadata ?? {}) as {
+      nom?: string;
+      telephone?: string;
+      full_name?: string;
+      name?: string;
+    };
     const passId =
       'PASS-CYP-' + user.id.replace(/-/g, '').substring(0, 8).toUpperCase();
 
+    const resolvedName =
+      meta.nom?.trim() ||
+      meta.full_name?.trim() ||
+      meta.name?.trim() ||
+      user.email?.split('@')[0] ||
+      'Client';
+
     const row = {
       id_pass_wallet: passId,
-      nom: meta.nom?.trim() || user.email?.split('@')[0] || 'Client',
+      nom: resolvedName,
       email: user.email ?? null,
       telephone: meta.telephone || null,
       auth_user_id: user.id,

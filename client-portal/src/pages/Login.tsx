@@ -2,7 +2,15 @@ import { FormEvent, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, Mail, Lock, LogIn } from 'lucide-react';
 import { useAuth } from '../lib/auth';
-import { AuthHeader, ConfigWarning, ErrorBanner, Field, inputCls } from './SignUp';
+import {
+  AuthDivider,
+  AuthHeader,
+  ConfigWarning,
+  ErrorBanner,
+  Field,
+  GoogleButton,
+  inputCls,
+} from './SignUp';
 
 export default function Login() {
   const { signIn, user, isConfigured } = useAuth();
@@ -51,10 +59,10 @@ export default function Login() {
 
           {!isConfigured && <ConfigWarning />}
 
-          <form
-            onSubmit={handleSubmit}
-            className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-6 md:p-7 shadow-sm space-y-4"
-          >
+          <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-6 md:p-7 shadow-sm">
+            <GoogleButton label="Continuer avec Google" onError={setError} />
+            <AuthDivider />
+            <form onSubmit={handleSubmit} className="space-y-4">
             <Field label="Email" icon={<Mail className="w-4 h-4" />} required>
               <input
                 type="email"
@@ -99,7 +107,8 @@ export default function Login() {
                 Créez-en un gratuitement
               </Link>
             </p>
-          </form>
+            </form>
+          </div>
         </div>
       </main>
     </div>
