@@ -203,16 +203,16 @@ export default function Orders({ merchant }: OrdersProps) {
             onClick={() => setFilter(f.value)}
             className={`shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
               filter === f.value
-                ? 'bg-white text-slate-900 border-white shadow-md'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] border-[var(--color-olive)] shadow-md shadow-[var(--color-olive)]/20'
+                : 'bg-[var(--color-cream)] text-[var(--color-taupe)] border-[var(--color-shell)] hover:text-[var(--color-wood)] hover:border-[var(--color-stone)]'
             }`}
           >
             {f.label}
             <span
               className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-md text-[10px] font-mono ${
                 filter === f.value
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-800 text-slate-300'
+                  ? 'bg-[var(--color-olive-deep)] text-[var(--color-cream)]'
+                  : 'bg-[var(--color-sand)] text-[var(--color-taupe)]'
               }`}
             >
               {counts[f.value]}
@@ -223,10 +223,10 @@ export default function Orders({ merchant }: OrdersProps) {
 
       {/* Error */}
       {error && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-xs text-rose-300 flex items-start gap-2">
+        <div className="bg-[var(--color-paprika)]/10 border border-[var(--color-paprika)]/30 rounded-2xl p-4 text-xs text-[var(--color-paprika)] flex items-start gap-2">
           <X className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
-            <strong className="font-semibold text-rose-200 block mb-0.5">Erreur</strong>
+            <strong className="font-semibold text-[var(--color-paprika)] block mb-0.5">Erreur</strong>
             {error}
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function Orders({ merchant }: OrdersProps) {
 
       {/* List */}
       {loading ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 flex items-center justify-center text-slate-400 text-xs">
+        <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-10 flex items-center justify-center text-[var(--color-taupe)] text-xs">
           <Loader2 className="w-4 h-4 animate-spin mr-2" />
           Chargement des commandes…
         </div>
@@ -277,24 +277,24 @@ function OrderCard({
 
   return (
     <div
-      className={`bg-slate-900 border rounded-3xl shadow-md overflow-hidden transition-all ${
+      className={`bg-[var(--color-cream)] border rounded-3xl shadow-md overflow-hidden transition-all ${
         order.statut === 'en_attente'
-          ? 'border-amber-400/30 shadow-amber-400/5'
-          : 'border-slate-800'
+          ? 'border-[var(--color-straw)]/40 shadow-md shadow-[var(--color-straw)]/10'
+          : 'border-[var(--color-shell)]'
       }`}
     >
       {/* Header row */}
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-slate-800/30 transition-colors cursor-pointer text-left"
+        className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-[var(--color-sand)] transition-colors cursor-pointer text-left"
       >
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <div className={`w-2 h-10 rounded-full ${style.dot}`} />
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <p className="text-sm font-bold text-white truncate flex items-center gap-1.5">
-                <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+              <p className="text-sm font-bold text-[var(--color-wood)] truncate flex items-center gap-1.5">
+                <UserIcon className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 {order.client_nom ?? '—'}
               </p>
               <span
@@ -303,7 +303,7 @@ function OrderCard({
                 {STATUT_LABELS[order.statut]}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-slate-500 font-mono">
+            <div className="flex items-center gap-3 text-[10px] text-[var(--color-taupe-light)] font-mono">
               <span>#{order.id.slice(0, 8)}</span>
               <span>•</span>
               <span className="inline-flex items-center gap-1">
@@ -319,13 +319,13 @@ function OrderCard({
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <span className="font-display text-base md:text-lg font-bold text-white font-mono">
+          <span className="font-display text-base md:text-lg font-bold text-[var(--color-wood)] font-mono">
             {formatPrixCents(order.total_cents)}
           </span>
           {expanded ? (
-            <ChevronUp className="w-4 h-4 text-slate-500" />
+            <ChevronUp className="w-4 h-4 text-[var(--color-taupe-light)]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-slate-500" />
+            <ChevronDown className="w-4 h-4 text-[var(--color-taupe-light)]" />
           )}
         </div>
       </button>

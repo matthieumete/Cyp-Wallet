@@ -313,31 +313,31 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-slate-950 border border-white/20 text-white rounded-3xl p-6 shadow-xl flex flex-col items-center text-center relative overflow-hidden"
+            className="bg-gradient-to-br from-[var(--color-terracotta)] to-[var(--color-paprika)] border border-[var(--color-terracotta-dark)]/40 text-[var(--color-cream)] rounded-3xl p-6 shadow-xl shadow-[var(--color-terracotta)]/20 flex flex-col items-center text-center relative overflow-hidden"
           >
             {/* Background elements */}
-            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-            <div className="absolute -left-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[var(--color-straw)]/25 rounded-full blur-2xl" />
+            <div className="absolute -left-10 -top-10 w-40 h-40 bg-[var(--color-cream)]/15 rounded-full blur-2xl" />
 
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-              <Ticket className="w-8 h-8 text-white" />
+            <div className="w-14 h-14 bg-[var(--color-cream)]/20 rounded-2xl flex items-center justify-center mb-4">
+              <Ticket className="w-8 h-8 text-[var(--color-cream)]" />
             </div>
 
             <h3 className="text-xl font-display font-extrabold tracking-tight">Coup de poing ! Remise Disponible !</h3>
-            <p className="text-xs text-white/90 mt-1.5 max-w-[280px] leading-relaxed">
+            <p className="text-xs text-[var(--color-cream)]/90 mt-1.5 max-w-[280px] leading-relaxed">
               Le client bénéficie maintenant d'une remise chez {merchant.nom_enseigne} ! Présentez-lui sa réduction !
             </p>
 
             <div className="flex gap-2.5 mt-5 w-full justify-center">
               <button
                 onClick={handleRedeemDiscount}
-                className="px-5 py-2.5 bg-white text-slate-950 hover:bg-slate-100 rounded-xl text-xs font-extrabold shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                className="px-5 py-2.5 bg-[var(--color-cream)] text-[var(--color-terracotta-dark)] hover:bg-[var(--color-sand)] rounded-full text-xs font-extrabold shadow-md transition-all active:scale-[0.98] cursor-pointer"
               >
                 Valider la remise
               </button>
               <button
                 onClick={() => setCelebrateDiscount(false)}
-                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
+                className="px-4 py-2.5 bg-[var(--color-cream)]/15 hover:bg-[var(--color-cream)]/25 text-[var(--color-cream)] rounded-full text-xs font-medium transition-all cursor-pointer"
               >
                 Fermer
               </button>
@@ -347,59 +347,61 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </AnimatePresence>
 
       {/* Header Profile Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 relative overflow-hidden">
-        <div className="flex items-start justify-between">
+      <div className="bg-gradient-to-br from-[var(--color-olive)] to-[var(--color-moss)] border border-[var(--color-olive-dark)]/40 rounded-3xl shadow-xl shadow-[var(--color-olive-deep)]/20 p-6 relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-[var(--color-sage-light)]/20 blur-2xl pointer-events-none" />
+        <div className="absolute -left-6 -bottom-10 w-56 h-56 rounded-full bg-[var(--color-straw)]/15 blur-3xl pointer-events-none" />
+        <div className="flex items-start justify-between relative">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shadow-sm shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/20 flex items-center justify-center text-[var(--color-cream)] shadow-sm shrink-0">
               <CreditCard className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+              <p className="text-[9px] font-bold text-[var(--color-cream)]/80 uppercase tracking-widest font-mono">
                 {client ? `PASS DE FIDÉLITÉ • ${client.nom.toUpperCase()}` : 'PASS DE FIDÉLITÉ WALLET'}
               </p>
-              <h3 className="text-sm md:text-base font-display font-extrabold text-white tracking-tight font-mono uppercase">
+              <h3 className="text-sm md:text-base font-display font-extrabold text-[var(--color-cream)] tracking-tight font-mono uppercase">
                 {idPassWallet}
               </h3>
             </div>
           </div>
           <button
             onClick={onClear}
-            className="p-1 px-3 text-[10px] font-bold text-slate-400 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-200 rounded-full transition-all outline-none cursor-pointer"
+            className="p-1 px-3 text-[10px] font-bold text-[var(--color-cream)]/80 bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/20 hover:border-[var(--color-cream)]/40 hover:text-[var(--color-cream)] rounded-full transition-all outline-none cursor-pointer"
           >
             Scanner un autre pass
           </button>
         </div>
 
         {/* Progress Arc and state stats */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center relative">
           {/* Visual indicators */}
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Solde Actuel</span>
+                <span className="text-[10px] font-bold text-[var(--color-cream)]/80 uppercase tracking-wider block">Solde Actuel</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-4xl font-display font-extrabold text-white tracking-tight font-mono">{points}</span>
-                  <span className="text-[10px] text-white font-bold uppercase font-mono">pts</span>
+                  <span className="text-4xl font-display font-extrabold text-[var(--color-cream)] tracking-tight font-mono">{points}</span>
+                  <span className="text-[10px] text-[var(--color-cream)] font-bold uppercase font-mono">pts</span>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seuil De Remise</span>
+                <span className="text-[10px] font-bold text-[var(--color-cream)]/80 uppercase tracking-wider block">Seuil De Remise</span>
                 <div className="flex items-baseline gap-1 mt-1 justify-end">
-                  <span className="text-xl font-display font-extrabold text-slate-200">{threshold}</span>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase font-mono">pts</span>
+                  <span className="text-xl font-display font-extrabold text-[var(--color-cream)]">{threshold}</span>
+                  <span className="text-[9px] text-[var(--color-cream)]/70 font-semibold uppercase font-mono">pts</span>
                 </div>
               </div>
             </div>
 
             {/* Custom styled Progress bar */}
             <div className="space-y-2">
-              <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden relative border border-slate-800/65">
+              <div className="w-full h-3 bg-[var(--color-olive-deep)]/40 rounded-full overflow-hidden relative border border-[var(--color-cream)]/15">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.4)]' : 'bg-slate-700'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-[var(--color-straw)] shadow-[0_0_8px_1px_rgba(212,165,116,0.5)]' : 'bg-[var(--color-sage-light)]'}`}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[9px] font-bold text-slate-500 font-mono">
+              <div className="flex justify-between items-center text-[9px] font-bold text-[var(--color-cream)]/70 font-mono">
                 <span>0 PT</span>
                 <span>{progressPercent.toFixed(0)}% DU SEUIL</span>
                 <span>{threshold} PTS</span>
@@ -410,13 +412,13 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
           {/* Dynamic Action Trigger/Reward Banner */}
           <div className="h-full flex">
             {isEligible ? (
-              <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between">
+              <div className="w-full bg-[var(--color-straw)]/20 border border-[var(--color-straw)]/40 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-sm">
                 <div>
-                  <h4 className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <h4 className="text-[10px] font-bold text-[var(--color-straw-light)] flex items-center gap-1.5 uppercase tracking-wider">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-straw-light)]" />
                     REMISE DISPONIBLE !
                   </h4>
-                  <p className="text-[11px] text-emerald-350/80 mt-1 lines-relaxed leading-snug">
+                  <p className="text-[11px] text-[var(--color-cream)]/90 mt-1 lines-relaxed leading-snug">
                     Le client a atteint le seuil requis de <strong>{threshold} points</strong>. Encaisser ou déduire l'offre de récompense en boutique.
                   </p>
                 </div>
@@ -426,16 +428,16 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   disabled={isSubmitting}
                   className="mt-4 w-full"
                 >
-                  <Ticket className="w-3.5 h-3.5 text-white" />
+                  <Ticket className="w-3.5 h-3.5 text-[var(--color-cream)]" />
                   Consommer la remise (-{threshold} pts)
                 </ShinyButton>
               </div>
             ) : (
-              <div className="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-center text-center">
-                <Award className="w-7 h-7 text-slate-500 mx-auto mb-2.5" />
-                <p className="text-xs font-semibold text-slate-350">Progression en cours</p>
-                <p className="text-[10px] text-slate-400 mt-1 max-w-[190px] mx-auto leading-relaxed">
-                  Il reste encore <strong className="text-white font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
+              <div className="w-full bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/15 rounded-2xl p-5 flex flex-col justify-center text-center backdrop-blur-sm">
+                <Award className="w-7 h-7 text-[var(--color-cream)]/70 mx-auto mb-2.5" />
+                <p className="text-xs font-semibold text-[var(--color-cream)]">Progression en cours</p>
+                <p className="text-[10px] text-[var(--color-cream)]/80 mt-1 max-w-[190px] mx-auto leading-relaxed">
+                  Il reste encore <strong className="text-[var(--color-cream)] font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
                 </p>
               </div>
             )}

@@ -326,25 +326,25 @@ function ProduitCard({
 }) {
   return (
     <div
-      className={`bg-slate-900 border rounded-3xl p-5 shadow-md transition-all ${
-        produit.disponible ? 'border-slate-800' : 'border-slate-850 opacity-70'
+      className={`bg-[var(--color-cream)] border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all ${
+        produit.disponible ? 'border-[var(--color-shell)]' : 'border-[var(--color-shell)] opacity-70'
       }`}
     >
       <div className="flex items-start justify-between mb-3 gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
             {produit.categorie && (
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider font-mono flex items-center gap-1">
+              <span className="text-[9px] font-bold text-[var(--color-taupe-light)] uppercase tracking-wider font-mono flex items-center gap-1">
                 <Tag className="w-2.5 h-2.5" />
                 {produit.categorie}
               </span>
             )}
           </div>
-          <h3 className="font-display font-bold text-sm text-slate-100 tracking-tight truncate">
+          <h3 className="font-display font-bold text-sm text-[var(--color-wood)] tracking-tight truncate">
             {produit.nom}
           </h3>
           {produit.description && (
-            <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+            <p className="text-[11px] text-[var(--color-taupe)] mt-1 line-clamp-2 leading-relaxed">
               {produit.description}
             </p>
           )}
@@ -355,29 +355,29 @@ function ProduitCard({
           disabled={isToggling}
           title={produit.disponible ? 'Masquer du portail client' : 'Rendre disponible'}
           className={`shrink-0 relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-            produit.disponible ? 'bg-emerald-500' : 'bg-slate-700'
+            produit.disponible ? 'bg-[var(--color-olive)]' : 'bg-[var(--color-stone)]'
           } ${isToggling ? 'opacity-50' : ''}`}
         >
           <span
-            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+            className={`absolute top-0.5 w-5 h-5 bg-[var(--color-cream)] rounded-full transition-transform ${
               produit.disponible ? 'translate-x-5' : 'translate-x-0.5'
             }`}
           />
         </button>
       </div>
 
-      <div className="flex items-end justify-between pt-3 border-t border-slate-800/70">
+      <div className="flex items-end justify-between pt-3 border-t border-[var(--color-shell)]/70">
         <div>
-          <p className="font-display text-xl font-extrabold text-white tracking-tight font-mono">
+          <p className="font-display text-xl font-extrabold text-[var(--color-wood)] tracking-tight font-mono">
             {formatPrixCents(produit.prix_cents)}
           </p>
           {produit.unite && (
-            <p className="text-[10px] text-slate-500 uppercase font-bold mt-0.5 font-mono">
+            <p className="text-[10px] text-[var(--color-taupe-light)] uppercase font-bold mt-0.5 font-mono">
               / {produit.unite}
             </p>
           )}
           {produit.stock !== null && produit.stock !== undefined && (
-            <p className="text-[10px] text-slate-400 font-mono mt-1 flex items-center gap-1">
+            <p className="text-[10px] text-[var(--color-taupe)] font-mono mt-1 flex items-center gap-1">
               <Inbox className="w-2.5 h-2.5" />
               Stock : {produit.stock}
             </p>
@@ -386,7 +386,7 @@ function ProduitCard({
 
         <button
           onClick={onEdit}
-          className="px-3 py-2 text-[10px] font-bold uppercase rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-slate-300 transition-all flex items-center gap-1.5 cursor-pointer"
+          className="px-3 py-2 text-[10px] font-bold uppercase rounded-xl bg-[var(--color-sand)] border border-[var(--color-shell)] hover:border-[var(--color-terracotta)] hover:bg-[var(--color-terracotta)]/10 text-[var(--color-wood-soft)] hover:text-[var(--color-terracotta)] transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <Pencil className="w-3 h-3" />
           Modifier
@@ -407,19 +407,19 @@ function EmptyState({
 }) {
   if (!hasAny) {
     return (
-      <div className="bg-slate-900 border border-slate-800 border-dashed rounded-3xl p-10 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 mx-auto mb-4">
+      <div className="bg-[var(--color-cream)] border border-dashed border-[var(--color-shell)] rounded-3xl p-10 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-[var(--color-sand)] border border-[var(--color-shell)] flex items-center justify-center text-[var(--color-olive)] mx-auto mb-4">
           <Sparkles className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-display font-extrabold text-white tracking-tight uppercase">
+        <h3 className="text-base font-display font-extrabold text-[var(--color-wood)] tracking-tight uppercase">
           Votre catalogue est vide
         </h3>
-        <p className="text-xs text-slate-400 mt-2 max-w-[340px] mx-auto leading-relaxed">
+        <p className="text-xs text-[var(--color-taupe)] mt-2 max-w-[340px] mx-auto leading-relaxed">
           Ajoutez votre premier produit pour qu'il apparaisse aux clients du marché.
           Vous pouvez ajuster les prix, la disponibilité et les stocks à tout moment.
         </p>
-        <ShinyButton type="button" onClick={onAdd} className="mt-6 max-w-xs mx-auto">
-          <Plus className="w-4 h-4 text-white" />
+        <ShinyButton type="button" onClick={onAdd} className="mt-6 max-w-xs mx-auto bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] text-[var(--color-cream)] rounded-full font-semibold shadow-md shadow-[var(--color-olive)]/20">
+          <Plus className="w-4 h-4 text-[var(--color-cream)]" />
           Ajouter mon premier produit
         </ShinyButton>
       </div>
@@ -427,14 +427,14 @@ function EmptyState({
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center">
-      <p className="text-xs text-slate-400 mb-4">
+    <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-8 text-center">
+      <p className="text-xs text-[var(--color-taupe)] mb-4">
         Aucun produit ne correspond à vos filtres actuels.
       </p>
       <button
         type="button"
         onClick={onClearFilters}
-        className="px-4 py-2 text-[10px] font-bold uppercase rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 cursor-pointer"
+        className="px-4 py-2 text-[10px] font-bold uppercase rounded-xl bg-[var(--color-sand)] border border-[var(--color-shell)] hover:border-[var(--color-stone)] hover:bg-[var(--color-sand)]/80 text-[var(--color-wood-soft)] cursor-pointer"
       >
         Réinitialiser les filtres
       </button>
