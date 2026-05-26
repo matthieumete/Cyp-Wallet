@@ -241,10 +241,10 @@ export default function Catalogue({ merchant }: CatalogueProps) {
 
       {/* List */}
       {loading ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 flex items-center justify-center">
+        <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-12 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-400">Chargement du catalogue…</p>
+            <div className="w-10 h-10 border-4 border-[var(--color-shell)] border-t-[var(--color-olive)] rounded-full animate-spin" />
+            <p className="text-xs font-semibold text-[var(--color-taupe)]">Chargement du catalogue…</p>
           </div>
         </div>
       ) : filteredProduits.length === 0 ? (
@@ -302,11 +302,11 @@ function StatCard({
     <div className={`border rounded-2xl p-4 ${tint}`}>
       <div className="flex items-center gap-1.5 mb-1.5">
         {icon}
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.16em] font-mono">
+        <span className="text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-[0.16em] font-mono">
           {label}
         </span>
       </div>
-      <p className="font-display text-2xl font-extrabold text-white tracking-tight font-mono">
+      <p className="font-display text-2xl font-extrabold text-[var(--color-wood)] tracking-tight font-mono">
         {value}
       </p>
     </div>

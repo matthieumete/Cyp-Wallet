@@ -234,33 +234,33 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       {/* QR Code Creation Modal */}
       <AnimatePresence>
         {createdClientPass && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 bg-[var(--color-wood)]/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
+              className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-white/30 via-white to-white/30" />
-              
-              <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white mx-auto mb-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-olive)]/30 via-[var(--color-olive)] to-[var(--color-olive)]/30" />
+
+              <div className="w-12 h-12 rounded-2xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-olive-deep)] mx-auto mb-4">
                 <CheckCircle2 className="w-6 h-6 animate-pulse" />
               </div>
 
-              <h3 className="text-base font-display font-extrabold text-white tracking-tight uppercase">
+              <h3 className="text-base font-display font-extrabold text-[var(--color-wood)] tracking-tight uppercase">
                 Fiche Client Créée !
               </h3>
-              <p className="text-xs text-slate-400 mt-1.5 px-2 leading-relaxed">
+              <p className="text-xs text-[var(--color-taupe)] mt-1.5 px-2 leading-relaxed">
                 Le pass de fidélité a été rattaché avec succès. Présentez ou téléchargez ce QR code pour l'ajouter au smartphone du client.
               </p>
 
               {/* QR Code Render Area */}
-              <div className="my-6 bg-white p-3 rounded-2xl inline-block shadow-inner border border-slate-705 mx-auto">
+              <div className="my-6 bg-white p-3 rounded-2xl inline-block shadow-inner border border-[var(--color-shell)] mx-auto">
                 <canvas ref={qrCanvasRef} className="w-[180px] h-[180px] block" />
               </div>
 
               <div className="mb-4">
-                <p className="text-xs font-mono font-bold text-slate-200 tracking-wider bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 inline-block">
+                <p className="text-xs font-mono font-bold text-[var(--color-wood)] tracking-wider bg-[var(--color-sand)] px-3 py-1.5 rounded-xl border border-[var(--color-shell)] inline-block">
                   {createdClientPass}
                 </p>
               </div>
@@ -270,7 +270,7 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                 <button
                   type="button"
                   onClick={handleDownloadQr}
-                  className="px-3 py-2.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+                  className="px-3 py-2.5 bg-[var(--color-sand)] hover:bg-[var(--color-shell)] border border-[var(--color-shell)] text-[var(--color-wood-soft)] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
                 >
                   <Download className="w-4 h-4" />
                   Télécharger
@@ -278,11 +278,11 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                 <button
                   type="button"
                   onClick={handleShareQr}
-                  className="px-3 py-2.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+                  className="px-3 py-2.5 bg-[var(--color-sand)] hover:bg-[var(--color-shell)] border border-[var(--color-shell)] text-[var(--color-wood-soft)] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <Check className="w-4 h-4 text-[var(--color-olive)]" />
                       Copié !
                     </>
                   ) : (

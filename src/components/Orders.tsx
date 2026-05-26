@@ -40,24 +40,24 @@ const FILTERS: { value: Filter; label: string; statuts: StatutCommande[] }[] = [
 
 const STATUT_STYLES: Record<StatutCommande, { dot: string; chip: string }> = {
   en_attente: {
-    dot: 'bg-amber-400',
-    chip: 'bg-amber-400/10 text-amber-300 border-amber-400/30',
+    dot: 'bg-[var(--color-straw)]',
+    chip: 'bg-[var(--color-straw)]/15 text-[var(--color-wood-soft)] border-[var(--color-straw)]/40',
   },
   confirmee: {
-    dot: 'bg-sky-400',
-    chip: 'bg-sky-400/10 text-sky-300 border-sky-400/30',
+    dot: 'bg-[var(--color-sage)]',
+    chip: 'bg-[var(--color-sage)]/15 text-[var(--color-olive-deep)] border-[var(--color-sage)]/40',
   },
   prete: {
-    dot: 'bg-emerald-400',
-    chip: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/30',
+    dot: 'bg-[var(--color-olive)]',
+    chip: 'bg-[var(--color-olive)]/15 text-[var(--color-olive-deep)] border-[var(--color-olive)]/40',
   },
   retiree: {
-    dot: 'bg-slate-500',
-    chip: 'bg-slate-700/40 text-slate-400 border-slate-700',
+    dot: 'bg-[var(--color-stone)]',
+    chip: 'bg-[var(--color-sand)] text-[var(--color-taupe)] border-[var(--color-shell)]',
   },
   annulee: {
-    dot: 'bg-rose-400',
-    chip: 'bg-rose-400/10 text-rose-300 border-rose-400/30',
+    dot: 'bg-[var(--color-paprika)]',
+    chip: 'bg-[var(--color-paprika)]/10 text-[var(--color-paprika)] border-[var(--color-paprika)]/30',
   },
 };
 
@@ -158,17 +158,17 @@ export default function Orders({ merchant }: OrdersProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="space-y-1">
-          <h2 className="text-lg md:text-xl font-display font-bold text-white tracking-tight flex items-center gap-2.5">
-            <span className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
-              <ShoppingBag className="w-4 h-4 text-white" />
+          <h2 className="text-lg md:text-xl font-display font-bold text-[var(--color-wood)] tracking-tight flex items-center gap-2.5">
+            <span className="w-9 h-9 rounded-xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-[var(--color-olive-deep)]" />
             </span>
             Commandes du marché
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[var(--color-taupe)]">
             {aTraiterCount > 0 ? (
               <span className="inline-flex items-center gap-1.5">
-                <Bell className="w-3 h-3 text-amber-400 animate-pulse" />
-                <strong className="text-amber-300 font-mono font-bold">{aTraiterCount}</strong>{' '}
+                <Bell className="w-3 h-3 text-[var(--color-terracotta)] animate-pulse" />
+                <strong className="text-[var(--color-terracotta)] font-mono font-bold">{aTraiterCount}</strong>{' '}
                 commande{aTraiterCount > 1 ? 's' : ''} à traiter
               </span>
             ) : (
@@ -179,7 +179,7 @@ export default function Orders({ merchant }: OrdersProps) {
 
         <div className="flex items-center gap-3">
           {lastSyncAt && (
-            <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
+            <span className="text-[10px] text-[var(--color-taupe-light)] font-mono hidden sm:inline">
               Sync {lastSyncAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -187,7 +187,7 @@ export default function Orders({ merchant }: OrdersProps) {
             type="button"
             onClick={() => fetchOrders(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-800 disabled:opacity-50 rounded-xl text-[11px] font-bold uppercase tracking-wider text-slate-300 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--color-cream)] border border-[var(--color-shell)] hover:bg-[var(--color-sand)] disabled:opacity-50 rounded-xl text-[11px] font-bold uppercase tracking-wider text-[var(--color-taupe)] hover:text-[var(--color-wood)] transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Actualiser
