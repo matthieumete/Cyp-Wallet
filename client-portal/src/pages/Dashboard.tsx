@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import QRCode from 'qrcode';
 import {
   CreditCard,
   ShoppingBasket,
@@ -127,24 +128,45 @@ function PassCard({
   profile: ReturnType<typeof useAuth>['profile'];
   email: string | null;
 }) {
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const passId = profile?.id_pass_wallet ?? null;
+
+  useEffect(() => {
+    if (!passId || !qrCanvasRef.current) return;
+    QRCode.toCanvas(
+      qrCanvasRef.current,
+      passId,
+      { width: 200, margin: 1, color: { dark: '#000000', light: '#ffffff' } },
+      (error) => {
+        if (error) console.error('[portal] QR generation failed:', error);
+      }
+    );
+  }, [passId]);
+
   return (
     <div className="relative bg-gradient-to-br from-[var(--color-olive)] to-[var(--color-moss)] rounded-3xl p-7 md:p-8 shadow-xl shadow-[var(--color-olive-deep)]/20 overflow-hidden">
       <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-[var(--color-sage-light)]/20 blur-2xl" />
       <div className="absolute -left-6 -bottom-10 w-56 h-56 rounded-full bg-[var(--color-straw)]/15 blur-3xl" />
 
       <div className="relative grid md:grid-cols-2 gap-6 items-center">
-        <div>
+        <div className="flex flex-col items-center md:items-start">
           <div className="flex items-center gap-2 mb-4">
             <CreditCard className="w-4 h-4 text-[var(--color-cream)]/80" />
             <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--color-cream)]/80 font-semibold">
               Mon Pass Fidélité
             </span>
           </div>
-          <p className="font-mono text-2xl md:text-3xl font-bold text-[var(--color-cream)] tracking-wider">
-            {profile?.id_pass_wallet ?? '—'}
-          </p>
-          <p className="text-xs text-[var(--color-cream)]/80 mt-2">
-            Présentez ce pass aux commerçants pour cumuler vos points.
+          {passId ? (
+            <div className="bg-white rounded-2xl p-3 shadow-md">
+              <canvas ref={qrCanvasRef} className="block w-[200px] h-[200px]" />
+            </div>
+          ) : (
+            <div className="w-[200px] h-[200px] rounded-2xl bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/15 flex items-center justify-center text-[var(--color-cream)]/60 text-sm">
+              —
+            </div>
+          )}
+          <p className="text-xs text-[var(--color-cream)]/80 mt-3 text-center md:text-left max-w-[220px]">
+            Présentez ce QR code aux commerçants pour cumuler vos points.
           </p>
         </div>
 
