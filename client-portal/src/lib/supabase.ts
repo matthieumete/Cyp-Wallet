@@ -61,6 +61,10 @@ export const supabase: SupabaseClient = isSupabaseConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        // Neutralise navigator.locks : sans ce passe-plat, getSession() peut
+        // deadlock quand un onglet précédent a gardé le lock (StrictMode dev,
+        // crash, onglet fermé brutalement). Voir supabase/auth-js#888.
+        lock: async (_name, _acquireTimeout, fn) => fn(),
       },
     })
   : createStubClient();
