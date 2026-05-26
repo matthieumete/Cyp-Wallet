@@ -6,10 +6,11 @@ import Scanner from './components/Scanner';
 import LoyaltyHub from './components/LoyaltyHub';
 import Settings from './components/Settings';
 import Catalogue from './components/Catalogue';
-import { LogOut, Sun, ReceiptEuro, Wallet, UserPlus, HeartHandshake, ShoppingBag } from 'lucide-react';
+import Orders from './components/Orders';
+import { LogOut, Sun, ReceiptEuro, Wallet, UserPlus, HeartHandshake, ShoppingBag, ClipboardList } from 'lucide-react';
 import { ShinyButton } from './components/ui/shiny-button';
 
-type AppTab = 'fidelite' | 'catalogue';
+type AppTab = 'fidelite' | 'commandes' | 'catalogue';
 
 export default function App() {
   const [activeMerchant, setActiveMerchant] = useState<Commercant | null>(null);
@@ -17,7 +18,29 @@ export default function App() {
   const [isSupabase, setIsSupabase] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState<AppTab>('fidelite');
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [, startTransition] = useTransition();
+
+  // Polling global du nombre de commandes "à traiter" pour le badge d'onglet.
+  // Tourne dès qu'un commerçant est connecté, indépendamment de l'onglet actif.
+  useEffect(() => {
+    if (!activeMerchant) return;
+    let cancelled = false;
+    const refresh = async () => {
+      const res = await DbManager.listMerchantOrders(activeMerchant.id);
+      if (cancelled) return;
+      const count = res.data.filter(
+        (o) => o.statut === 'en_attente' || o.statut === 'confirmee'
+      ).length;
+      setPendingOrdersCount(count);
+    };
+    refresh();
+    const id = setInterval(refresh, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [activeMerchant]);
 
   // Load active session on start
   useEffect(() => {
@@ -130,6 +153,13 @@ export default function App() {
             label="Fidélité & encaissement"
           />
           <TabButton
+            active={activeTab === 'commandes'}
+            onClick={() => startTransition(() => setActiveTab('commandes'))}
+            icon={<ClipboardList className="w-3.5 h-3.5" />}
+            label="Commandes"
+            badge={pendingOrdersCount > 0 ? pendingOrdersCount : undefined}
+          />
+          <TabButton
             active={activeTab === 'catalogue'}
             onClick={() => startTransition(() => setActiveTab('catalogue'))}
             icon={<ShoppingBag className="w-3.5 h-3.5" />}
@@ -137,7 +167,9 @@ export default function App() {
           />
         </div>
 
-        {activeTab === 'catalogue' ? (
+        {activeTab === 'commandes' ? (
+          <Orders merchant={activeMerchant} />
+        ) : activeTab === 'catalogue' ? (
           <Catalogue merchant={activeMerchant} />
         ) : (
         /* ACTIVE COMMERÇANT DASHBOARD Flow */
@@ -247,11 +279,13 @@ function TabButton({
   onClick,
   icon,
   label,
+  badge,
 }: {
   active: boolean;
   onClick: () => void;
   icon: ReactNode;
   label: string;
+  badge?: number;
 }) {
   return (
     <button
@@ -264,6 +298,11 @@ function TabButton({
     >
       {icon}
       {label}
+      {badge !== undefined && (
+        <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 bg-amber-400 text-slate-900 rounded-md text-[10px] font-mono font-extrabold">
+          {badge}
+        </span>
+      )}
     </button>
   );
 }

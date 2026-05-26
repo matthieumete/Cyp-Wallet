@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Commercant, CagnotteSaintCyp, SupabaseConfig, TransactionHistory, ClientSaintCyp, Produit } from './types';
+import { Commercant, CagnotteSaintCyp, SupabaseConfig, TransactionHistory, ClientSaintCyp, Produit, MerchantOrder, StatutCommande, CommandeItem } from './types';
 import { INITIAL_MERCHANTS, INITIAL_CAGNOTTES, MOCK_CUSTOMERS, INITIAL_PRODUITS } from './data';
 
 // Key for storage
@@ -644,6 +644,82 @@ export class DbManager {
     disponible: boolean
   ): Promise<{ success: boolean; data?: Produit; error?: string }> {
     return this.updateProduit(id, { disponible });
+  }
+
+  // ───────────────────────────── Commandes ─────────────────────────────
+  // Les commandes n'existent que via le portail client (Supabase requis).
+  // Pas de fallback local : si Supabase n'est pas configuré, on retourne vide.
+
+  public static async listMerchantOrders(
+    commercantId: string
+  ): Promise<{ data: MerchantOrder[]; error?: string }> {
+    const supabase = this.getSupabaseClient();
+    if (!supabase) return { data: [] };
+
+    try {
+      const { data: commandes, error } = await supabase
+        .from('commandes')
+        .select('*, clients_saint_cyp(nom, telephone)')
+        .eq('commercant_id', commercantId)
+        .order('date_creation', { ascending: false });
+      if (error) throw error;
+
+      const list = (commandes ?? []) as any[];
+      if (list.length === 0) return { data: [] };
+
+      const ids = list.map((c) => c.id);
+      const { data: items, error: itemsErr } = await supabase
+        .from('commande_items')
+        .select('*')
+        .in('commande_id', ids);
+      if (itemsErr) throw itemsErr;
+
+      const itemsByCmd: Record<string, CommandeItem[]> = {};
+      (items as CommandeItem[] | null)?.forEach((it) => {
+        if (!itemsByCmd[it.commande_id]) itemsByCmd[it.commande_id] = [];
+        itemsByCmd[it.commande_id].push(it);
+      });
+
+      const orders: MerchantOrder[] = list.map((c) => ({
+        id: c.id,
+        id_pass_wallet: c.id_pass_wallet,
+        commercant_id: c.commercant_id,
+        statut: c.statut,
+        creneau_retrait: c.creneau_retrait,
+        total_cents: c.total_cents,
+        note_client: c.note_client,
+        date_creation: c.date_creation,
+        date_modification: c.date_modification,
+        client_nom: c.clients_saint_cyp?.nom ?? undefined,
+        client_telephone: c.clients_saint_cyp?.telephone ?? null,
+        items: itemsByCmd[c.id] ?? [],
+      }));
+
+      return { data: orders };
+    } catch (e: any) {
+      console.error('Erreur Supabase listMerchantOrders:', e);
+      return { data: [], error: e.message || String(e) };
+    }
+  }
+
+  public static async updateOrderStatus(
+    orderId: string,
+    statut: StatutCommande
+  ): Promise<{ success: boolean; error?: string }> {
+    const supabase = this.getSupabaseClient();
+    if (!supabase) {
+      return { success: false, error: 'Supabase non configuré.' };
+    }
+    try {
+      const { error } = await supabase
+        .from('commandes')
+        .update({ statut })
+        .eq('id', orderId);
+      if (error) throw error;
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || String(e) };
+    }
   }
 
   // 7. Get All Registered Clients
