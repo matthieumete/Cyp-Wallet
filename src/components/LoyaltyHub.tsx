@@ -215,10 +215,10 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
 
   if (loading) {
     return (
-      <div className="bg-slate-900 border border-slate-850 rounded-3xl shadow-xl p-8 flex items-center justify-center min-h-[300px]">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-8 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-slate-400">Chargement de la cagnotte client...</p>
+          <div className="w-10 h-10 border-4 border-[var(--color-olive)]/10 border-t-[var(--color-olive)] rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-[var(--color-taupe)]">Chargement de la cagnotte client...</p>
         </div>
       </div>
     );

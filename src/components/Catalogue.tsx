@@ -127,19 +127,19 @@ export default function Catalogue({ merchant }: CatalogueProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <ShoppingBag className="w-4 h-4 text-slate-300" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.18em] font-mono">
+              <ShoppingBag className="w-4 h-4 text-[var(--color-wood-soft)]" />
+              <span className="text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-[0.18em] font-mono">
                 Catalogue produits
               </span>
             </div>
-            <h2 className="text-lg md:text-xl font-display font-extrabold text-white tracking-tight uppercase">
+            <h2 className="text-lg md:text-xl font-display font-extrabold text-[var(--color-wood)] tracking-tight uppercase">
               Vos produits du moment
             </h2>
-            <p className="text-xs text-slate-400 mt-1 max-w-md">
+            <p className="text-xs text-[var(--color-taupe)] mt-1 max-w-md">
               Ajoutez, modifiez, et masquez ce qui n'est plus en stock. Les produits disponibles
               sont visibles depuis le portail client.
             </p>
@@ -148,50 +148,50 @@ export default function Catalogue({ merchant }: CatalogueProps) {
           <ShinyButton
             type="button"
             onClick={() => setEditing('new')}
-            className="shrink-0"
+            className="shrink-0 bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] text-[var(--color-cream)] rounded-full font-semibold shadow-md shadow-[var(--color-olive)]/20"
             id="add-produit-btn"
           >
-            <Plus className="w-4 h-4 text-white" />
+            <Plus className="w-4 h-4 text-[var(--color-cream)]" />
             Ajouter un produit
           </ShinyButton>
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-3">
           <StatCard
-            icon={<Package className="w-4 h-4 text-slate-300" />}
+            icon={<Package className="w-4 h-4 text-[var(--color-wood-soft)]" />}
             label="Produits"
             value={stats.total}
-            tint="bg-slate-950 border-slate-800"
+            tint="bg-[var(--color-sand)] border-[var(--color-shell)]"
           />
           <StatCard
-            icon={<CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+            icon={<CheckCircle2 className="w-4 h-4 text-[var(--color-olive)]" />}
             label="Disponibles"
             value={stats.available}
-            tint="bg-emerald-500/8 border-emerald-500/20"
+            tint="bg-[var(--color-olive)]/10 border-[var(--color-olive)]/20"
           />
           <StatCard
-            icon={<XCircle className="w-4 h-4 text-slate-500" />}
+            icon={<XCircle className="w-4 h-4 text-[var(--color-taupe-light)]" />}
             label="Masqués"
             value={stats.unavailable}
-            tint="bg-slate-950 border-slate-800"
+            tint="bg-[var(--color-sand)] border-[var(--color-shell)]"
           />
         </div>
       </div>
 
       {/* Filters bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 md:p-5 shadow-md flex flex-col md:flex-row items-stretch md:items-center gap-3">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-4 md:p-5 shadow-md flex flex-col md:flex-row items-stretch md:items-center gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[var(--color-taupe-light)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher un produit, une description, une catégorie…"
-            className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-medium text-slate-100 placeholder-slate-650 outline-none"
+            className="w-full pl-10 pr-3 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-sm text-[var(--color-wood)] placeholder-[var(--color-taupe-light)] outline-none"
           />
         </div>
 
-        <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl p-1 shrink-0">
+        <div className="flex items-center gap-1 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-xl p-1 shrink-0">
           {(['all', 'available', 'unavailable'] as Filter[]).map((f) => (
             <button
               key={f}
@@ -199,8 +199,8 @@ export default function Catalogue({ merchant }: CatalogueProps) {
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all cursor-pointer ${
                 filter === f
-                  ? 'bg-slate-800 text-slate-100'
-                  : 'text-slate-500 hover:text-slate-300'
+                  ? 'bg-[var(--color-olive)] text-[var(--color-cream)] shadow-sm shadow-[var(--color-olive)]/20'
+                  : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)]'
               }`}
             >
               {f === 'all' ? 'Tous' : f === 'available' ? 'Dispo' : 'Masqués'}
@@ -216,8 +216,8 @@ export default function Catalogue({ merchant }: CatalogueProps) {
             onClick={() => setCategorieFilter(null)}
             className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-full border transition-all cursor-pointer ${
               categorieFilter === null
-                ? 'bg-white text-slate-900 border-white'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] border-[var(--color-olive)] shadow-md shadow-[var(--color-olive)]/20'
+                : 'bg-[var(--color-cream)] text-[var(--color-taupe)] border-[var(--color-shell)] hover:text-[var(--color-wood)] hover:border-[var(--color-stone)]'
             }`}
           >
             <Layers className="w-3 h-3 inline mr-1 -mt-0.5" />
@@ -229,8 +229,8 @@ export default function Catalogue({ merchant }: CatalogueProps) {
               onClick={() => setCategorieFilter(cat)}
               className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-full border transition-all cursor-pointer ${
                 categorieFilter === cat
-                  ? 'bg-white text-slate-900 border-white'
-                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                  ? 'bg-[var(--color-olive)] text-[var(--color-cream)] border-[var(--color-olive)] shadow-md shadow-[var(--color-olive)]/20'
+                  : 'bg-[var(--color-cream)] text-[var(--color-taupe)] border-[var(--color-shell)] hover:text-[var(--color-wood)] hover:border-[var(--color-stone)]'
               }`}
             >
               {cat}

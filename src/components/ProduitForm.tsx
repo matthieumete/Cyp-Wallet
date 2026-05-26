@@ -85,26 +85,26 @@ export default function ProduitForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-[var(--color-wood)]/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
-        className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
       >
-        <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between rounded-t-3xl">
+        <div className="sticky top-0 bg-[var(--color-cream)] border-b border-[var(--color-shell)] px-6 py-4 flex items-center justify-between rounded-t-3xl">
           <div>
-            <h2 className="text-base font-display font-extrabold text-white uppercase tracking-tight">
+            <h2 className="text-base font-display font-extrabold text-[var(--color-wood)] uppercase tracking-tight">
               {initial ? 'Modifier un produit' : 'Nouveau produit'}
             </h2>
-            <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+            <p className="text-[10px] text-[var(--color-taupe)] font-mono mt-0.5">
               Catalogue de votre enseigne
             </p>
           </div>
           <button
             type="button"
             onClick={onCancel}
-            className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-400 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[var(--color-sand)] border border-[var(--color-shell)] hover:bg-[var(--color-sand)] text-[var(--color-taupe)] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -144,7 +144,7 @@ export default function ProduitForm({
                   placeholder="1.20"
                   className={inputCls + ' pr-8'}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500 font-mono pointer-events-none">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--color-taupe-light)] font-mono pointer-events-none">
                   €
                 </span>
               </div>
@@ -199,10 +199,10 @@ export default function ProduitForm({
             />
           </Field>
 
-          <div className="flex items-center justify-between p-3 bg-slate-950 border border-slate-800 rounded-2xl">
+          <div className="flex items-center justify-between p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-2xl">
             <div>
-              <p className="text-xs font-bold text-slate-100">Disponible à la vente</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-xs font-bold text-[var(--color-wood)]">Disponible à la vente</p>
+              <p className="text-[10px] text-[var(--color-taupe)] mt-0.5">
                 Si désactivé, le produit n'apparaît pas dans le portail client.
               </p>
             </div>
@@ -210,18 +210,18 @@ export default function ProduitForm({
               type="button"
               onClick={() => setDisponible(!disponible)}
               className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-                disponible ? 'bg-emerald-500' : 'bg-slate-700'
+                disponible ? 'bg-[var(--color-olive)]' : 'bg-[var(--color-shell)]'
               }`}
             >
               <span
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                className={`absolute top-0.5 w-5 h-5 bg-[var(--color-cream)] rounded-full transition-transform ${
                   disponible ? 'translate-x-5' : 'translate-x-0.5'
                 }`}
               />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 pt-3 border-t border-slate-800/70">
+          <div className="flex items-center gap-2 pt-3 border-t border-[var(--color-shell)]/70">
             {initial && onDelete && (
               <button
                 type="button"
@@ -236,8 +236,8 @@ export default function ProduitForm({
                 }}
                 className={`px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                   confirmDelete
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-slate-950 border border-slate-800 hover:border-red-800 text-red-400 hover:text-red-300'
+                    ? 'bg-[var(--color-paprika)] hover:bg-[var(--color-paprika)] text-[var(--color-cream)]'
+                    : 'bg-[var(--color-sand)] border border-[var(--color-shell)] hover:border-[var(--color-paprika)] text-[var(--color-paprika)] hover:text-[var(--color-paprika)]'
                 }`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -247,12 +247,12 @@ export default function ProduitForm({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-sand)] border border-[var(--color-shell)] hover:bg-[var(--color-sand)] text-[var(--color-wood-soft)] cursor-pointer"
             >
               Annuler
             </button>
-            <ShinyButton type="submit" disabled={isSubmitting} className="flex-1">
-              <Save className="w-3.5 h-3.5 text-white" />
+            <ShinyButton type="submit" disabled={isSubmitting} className="flex-1 bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] text-[var(--color-cream)] rounded-full font-semibold shadow-md shadow-[var(--color-olive)]/20">
+              <Save className="w-3.5 h-3.5 text-[var(--color-cream)]" />
               {isSubmitting ? 'Enregistrement…' : initial ? 'Enregistrer les modifications' : 'Créer le produit'}
             </ShinyButton>
           </div>
@@ -273,9 +273,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+      <label className="block text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
         {label}
-        {required && <span className="text-white ml-1">*</span>}
+        {required && <span className="text-[var(--color-paprika)] ml-1">*</span>}
       </label>
       {children}
     </div>
@@ -283,4 +283,4 @@ function Field({
 }
 
 const inputCls =
-  'w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650';
+  'w-full px-4 py-3 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-sm font-medium text-[var(--color-wood)] placeholder-[var(--color-taupe-light)] outline-none transition-colors';

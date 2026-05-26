@@ -96,21 +96,21 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-sand text-slate-100 font-sans flex flex-col justify-between" id="app-wrapper">
-      {/* Dynamic Mediterranean Sun Header Border */}
-      <div className="h-1 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700" />
+    <div className="min-h-screen bg-paper text-[var(--color-wood)] font-sans flex flex-col justify-between" id="app-wrapper">
+      {/* Bordure haute olive */}
+      <div className="h-1 bg-gradient-to-r from-[var(--color-olive)] via-[var(--color-sage)] to-[var(--color-olive)]" />
 
       {/* Primary Top Bar */}
-      <header className="h-20 border-b border-slate-800/80 bg-[#1e293b]/50 backdrop-blur-md flex items-center justify-between px-6 md:px-12 sticky top-0 z-40">
+      <header className="h-20 border-b border-[var(--color-shell)]/70 bg-[var(--color-cream)]/80 backdrop-blur-md flex items-center justify-between px-6 md:px-12 sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center font-extrabold text-xl text-white font-mono shadow-lg shadow-white/5">
+          <div className="w-10 h-10 bg-[var(--color-olive)] border border-[var(--color-olive-dark)] rounded-xl flex items-center justify-center font-extrabold text-xl text-[var(--color-cream)] font-display shadow-md shadow-[var(--color-olive)]/20">
             S
           </div>
           <div>
-            <h1 className="text-sm md:text-base font-display font-extrabold uppercase tracking-wider text-white">
+            <h1 className="text-sm md:text-base font-display font-extrabold uppercase tracking-wider text-[var(--color-wood)]">
               StCyp'Wallet
             </h1>
-            <p className="text-[10px] md:text-xs text-slate-400 font-mono">
+            <p className="text-[10px] md:text-xs text-[var(--color-taupe)] font-mono">
               Dashboard Commerçant Saint-Cyp v2.4
             </p>
           </div>
@@ -118,21 +118,21 @@ export default function App() {
 
         <div className="flex items-center gap-3">
           {/* Active Database connection badge */}
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-900/60 border border-slate-800 rounded-xl text-[10px] font-mono font-bold text-slate-400">
-            <span className={`w-1.5 h-1.5 rounded-full ${isSupabase ? 'bg-white animate-pulse' : 'bg-white/40'}`} />
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-xl text-[10px] font-mono font-bold text-[var(--color-taupe)]">
+            <span className={`w-1.5 h-1.5 rounded-full ${isSupabase ? 'bg-[var(--color-olive)] animate-pulse' : 'bg-[var(--color-stone)]'}`} />
             <span>{isSupabase ? 'SUPABASE' : 'DÉMO LOCALE'}</span>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">Session Active</span>
-              <span className="text-xs md:text-sm font-bold text-slate-100 max-w-[120px] md:max-w-none truncate block">
+              <span className="text-[9px] text-[var(--color-taupe)] font-bold block uppercase tracking-wider">Session Active</span>
+              <span className="text-xs md:text-sm font-bold text-[var(--color-wood)] max-w-[120px] md:max-w-none truncate block">
                 {activeMerchant.nom_enseigne}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className="w-10 h-10 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-red-400 transition-all outline-none"
+              className="w-10 h-10 rounded-xl border border-[var(--color-shell)] bg-[var(--color-cream)] hover:bg-[var(--color-sand)] flex items-center justify-center text-[var(--color-taupe)] hover:text-[var(--color-paprika)] transition-all outline-none cursor-pointer"
               title="Se déconnecter"
               id="header-logout-btn"
             >
@@ -145,7 +145,7 @@ export default function App() {
       {/* Main Body */}
       <main className="flex-grow container mx-auto max-w-7xl px-4 py-8 md:py-12 flex flex-col gap-8">
         {/* Tab navigation */}
-        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-1.5 w-full md:w-auto md:self-start">
+        <div className="flex items-center gap-2 bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-2xl p-1.5 w-full md:w-auto md:self-start shadow-sm">
           <TabButton
             active={activeTab === 'fidelite'}
             onClick={() => startTransition(() => setActiveTab('fidelite'))}
@@ -183,17 +183,17 @@ export default function App() {
             />
 
               {/* Little stats info card under the scanner */}
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-md relative overflow-hidden flex items-center justify-between gap-4">
+              <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-6 shadow-sm relative overflow-hidden flex items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Configuration Enseigne</h4>
-                  <p className="text-sm font-semibold text-slate-200">
-                    Seuil récompense : <strong className="text-white font-mono text-base">{activeMerchant.seuil_remise_pts} points</strong>
+                  <h4 className="text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider">Configuration Enseigne</h4>
+                  <p className="text-sm font-semibold text-[var(--color-wood-soft)]">
+                    Seuil récompense : <strong className="text-[var(--color-olive-deep)] font-mono text-base">{activeMerchant.seuil_remise_pts} points</strong>
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-[var(--color-taupe)]">
                     Mode : 1 Euro d'achat (€) = 1 point fidélité crédité.
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-olive-deep)] shrink-0">
                   <ReceiptEuro className="w-6 h-6" />
                 </div>
               </div>
@@ -209,14 +209,14 @@ export default function App() {
                   onTransactionComplete={triggerDataRefresh}
                 />
               ) : (
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center min-h-[420px]">
-                  <div className="w-16 h-16 rounded-3xl bg-slate-950 border border-slate-800 flex items-center justify-center text-white mb-6 shadow-inner">
-                    <Wallet className="w-8 h-8 text-white animate-pulse" />
+                <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-8 shadow-sm flex flex-col items-center justify-center text-center min-h-[420px]">
+                  <div className="w-16 h-16 rounded-3xl bg-[var(--color-sand)] border border-[var(--color-shell)] flex items-center justify-center text-[var(--color-olive-deep)] mb-6 shadow-inner">
+                    <Wallet className="w-8 h-8 animate-pulse" />
                   </div>
-                  <h3 className="text-lg font-display font-bold text-slate-100 tracking-tight">
+                  <h3 className="text-lg font-display font-bold text-[var(--color-wood)] tracking-tight">
                     En attente de transaction ou pass client...
                   </h3>
-                  <p className="text-xs text-slate-400 mt-2 max-w-[340px] mx-auto leading-relaxed">
+                  <p className="text-xs text-[var(--color-taupe)] mt-2 max-w-[340px] mx-auto leading-relaxed">
                     Scannez le QR Code StCyp'Wallet d'un client, ou sélectionnez-en un dans la liste de simulation de test. Vous pouvez également cliquer ci-dessous pour créer un pass à la volée.
                   </p>
 
@@ -228,23 +228,23 @@ export default function App() {
                     className="mt-6 w-full max-w-xs"
                     id="create-new-client-empty-btn"
                   >
-                    <UserPlus className="w-5 h-5 text-white" />
+                    <UserPlus className="w-5 h-5 text-[var(--color-cream)]" />
                     Créer un Nouveau Client / Pass
                   </ShinyButton>
 
-                  <div className="mt-8 border-t border-slate-800/80 pt-8 w-full">
+                  <div className="mt-8 border-t border-[var(--color-shell)]/70 pt-8 w-full">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-center">
-                        <span className="text-lg font-bold text-white font-mono">1</span>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase font-semibold">Scanner le pass</p>
+                      <div className="p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-2xl text-center">
+                        <span className="text-lg font-bold text-[var(--color-olive-deep)] font-mono">1</span>
+                        <p className="text-[10px] text-[var(--color-taupe)] mt-1 uppercase font-semibold">Scanner le pass</p>
                       </div>
-                      <div className="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-center">
-                        <span className="text-lg font-bold text-white font-mono">2</span>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase font-semibold">Saisir de valeur</p>
+                      <div className="p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-2xl text-center">
+                        <span className="text-lg font-bold text-[var(--color-olive-deep)] font-mono">2</span>
+                        <p className="text-[10px] text-[var(--color-taupe)] mt-1 uppercase font-semibold">Saisir de valeur</p>
                       </div>
-                      <div className="p-3 bg-slate-950 border border-slate-800 rounded-2xl text-center">
-                        <span className="text-lg font-bold text-white font-mono">3</span>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase font-semibold font-mono">Créditer l'id</p>
+                      <div className="p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-2xl text-center">
+                        <span className="text-lg font-bold text-[var(--color-olive-deep)] font-mono">3</span>
+                        <p className="text-[10px] text-[var(--color-taupe)] mt-1 uppercase font-semibold font-mono">Créditer l'id</p>
                       </div>
                     </div>
                   </div>
@@ -259,13 +259,13 @@ export default function App() {
       </main>
 
       {/* Coastal Mediterranean Footer */}
-      <footer className="bg-slate-950 border-t border-slate-800/80 py-6 px-4 text-center text-slate-500 text-xs font-mono">
+      <footer className="bg-[var(--color-sand)] border-t border-[var(--color-shell)]/70 py-6 px-4 text-center text-[var(--color-taupe-light)] text-xs font-mono">
         <div className="max-w-lg mx-auto flex flex-col items-center gap-2">
-          <p className="flex items-center gap-1.5 font-bold text-slate-400">
-            <Sun className="w-4 h-4 text-white/60 animate-spin" style={{ animationDuration: '30s' }} />
+          <p className="flex items-center gap-1.5 font-bold text-[var(--color-taupe)]">
+            <Sun className="w-4 h-4 text-[var(--color-straw)] animate-spin" style={{ animationDuration: '30s' }} />
             © 2026 VILLE DE SAINT-CYPRIEN • CONFORMITY ASSURED
           </p>
-          <p className="text-[10px] text-slate-500 max-w-[400px]">
+          <p className="text-[10px] text-[var(--color-taupe-light)] max-w-[400px]">
             Traitement du schéma relationnel cagnottes_saint_cyp. Données chiffrées selon les protocoles de cartes Wallet.
           </p>
         </div>
@@ -292,14 +292,18 @@ function TabButton({
       onClick={onClick}
       className={`flex-1 md:flex-none flex items-center gap-2 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
         active
-          ? 'bg-slate-800 text-white shadow-inner'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+          ? 'bg-[var(--color-olive)] text-[var(--color-cream)] shadow-md shadow-[var(--color-olive)]/20'
+          : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)] hover:bg-[var(--color-sand)]'
       }`}
     >
       {icon}
       {label}
       {badge !== undefined && (
-        <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 bg-amber-400 text-slate-900 rounded-md text-[10px] font-mono font-extrabold">
+        <span className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-md text-[10px] font-mono font-extrabold ${
+          active
+            ? 'bg-[var(--color-cream)] text-[var(--color-olive-deep)]'
+            : 'bg-[var(--color-terracotta)] text-[var(--color-cream)]'
+        }`}>
           {badge}
         </span>
       )}
