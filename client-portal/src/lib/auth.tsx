@@ -78,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         console.error('[portal] getSession error:', e);
       } finally {
+        clearTimeout(timeout);
         if (mounted) setLoading(false);
       }
     };
