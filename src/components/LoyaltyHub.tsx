@@ -549,20 +549,20 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Credit transaction amount section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
-        <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 mb-5 uppercase">
-          <Coins className="w-4 h-4 text-slate-300" />
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
+        <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 mb-5 uppercase">
+          <Coins className="w-4 h-4 text-[var(--color-olive)]" />
           Ajouter une transaction
         </h3>
 
         {/* Amount VS points formula toggle tabs */}
-        <div className="grid grid-cols-2 gap-2 mb-5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <div className="grid grid-cols-2 gap-2 mb-5 bg-[var(--color-sand)] p-1 rounded-xl border border-[var(--color-shell)]">
           <button
             onClick={() => startTransition(() => setUseAmountFormula(true))}
             className={`py-2 text-[10px] font-bold rounded-lg transition-all outline-none text-center cursor-pointer ${
               useAmountFormula
-                ? 'bg-slate-800 text-slate-100 font-semibold'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] font-semibold shadow-sm'
+                : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)]'
             }`}
             type="button"
           >
@@ -572,8 +572,8 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
             onClick={() => startTransition(() => setUseAmountFormula(false))}
             className={`py-2 text-[10px] font-bold rounded-lg transition-all outline-none text-center cursor-pointer ${
               !useAmountFormula
-                ? 'bg-slate-800 text-slate-100 font-semibold'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] font-semibold shadow-sm'
+                : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)]'
             }`}
             type="button"
           >
@@ -585,10 +585,10 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
           {useAmountFormula ? (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <label className="text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider">
                   Montant de l'achat (€)
                 </label>
-                <span className="text-[9px] text-white bg-white/10 border border-white/10 px-2 py-0.5 rounded font-mono font-bold">
+                <span className="text-[9px] text-[var(--color-olive-deep)] bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 px-2 py-0.5 rounded font-mono font-bold">
                   Rule: 1€ = 1 Point
                 </span>
               </div>
@@ -600,23 +600,23 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}
                   placeholder="Ex: 14.50"
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-2xl text-sm font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-4 py-3.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-2xl text-sm font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   required
                   id="transaction-amount-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500 font-mono">€</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--color-taupe-light)] font-mono">€</span>
               </div>
               {amountInput && parseFloat(amountInput) > 0 && (
-                <p className="text-[11px] text-slate-400 mt-2 italic flex items-center gap-1 font-mono">
-                  <ArrowUpRight className="w-3.5 h-3.5 text-white/50" />
+                <p className="text-[11px] text-[var(--color-taupe)] mt-2 italic flex items-center gap-1 font-mono">
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-olive)]/60" />
                   Cette transaction va créditer{' '}
-                  <strong className="text-white font-mono text-xs">{Math.floor(parseFloat(amountInput))} points</strong>.
+                  <strong className="text-[var(--color-olive-deep)] font-mono text-xs">{Math.floor(parseFloat(amountInput))} points</strong>.
                 </p>
               )}
             </div>
           ) : (
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <label className="block text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-2">
                 Nombre de points à ajouter (Direct)
               </label>
               <div className="relative">
@@ -627,11 +627,11 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   value={pointsInput}
                   onChange={(e) => setPointsInput(e.target.value)}
                   placeholder="Ex: 15"
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-2xl text-sm font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-4 py-3.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-2xl text-sm font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   required
                   id="transaction-points-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">PTS</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-taupe-light)] font-mono">PTS</span>
               </div>
             </div>
           )}
@@ -648,27 +648,27 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Recent History Log */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
-        <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 mb-4 uppercase">
-          <History className="w-4 h-4 text-slate-400" />
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
+        <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 mb-4 uppercase">
+          <History className="w-4 h-4 text-[var(--color-taupe)]" />
           Historique récent de l'enseigne
         </h3>
 
         {recentMerchantTxs.length === 0 ? (
-          <div className="text-center py-6 text-[11px] text-slate-500 font-mono">
+          <div className="text-center py-6 text-[11px] text-[var(--color-taupe-light)] font-mono">
             Aucun crédit enregistré aujourd’hui sur votre enseigne.
           </div>
         ) : (
           <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
             {recentMerchantTxs.slice(0, 5).map((tx) => (
-              <div key={tx.id} className="flex justify-between items-center p-3 bg-slate-950 border border-slate-850 rounded-xl">
+              <div key={tx.id} className="flex justify-between items-center p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-xl">
                 <div>
-                  <p className="text-xs font-mono font-semibold text-slate-200 uppercase">{tx.id_pass_wallet}</p>
-                  <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                  <p className="text-xs font-mono font-semibold text-[var(--color-wood)] uppercase">{tx.id_pass_wallet}</p>
+                  <p className="text-[9px] text-[var(--color-taupe-light)] font-mono mt-0.5">
                     {new Date(tx.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
-                <div className="text-[10px] font-bold font-mono px-2 py-0.5 rounded text-white bg-white/10">
+                <div className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${tx.type === 'addition' ? 'text-[var(--color-cream)] bg-[var(--color-olive)]' : 'text-[var(--color-cream)] bg-[var(--color-terracotta)]'}`}>
                   {tx.type === 'addition' ? `+${tx.points_ajoutes} pts` : `-${Math.abs(tx.points_ajoutes)} pts (REMISE)`}
                 </div>
               </div>
