@@ -1,10 +1,9 @@
-import { useState, useEffect, startTransition, FormEvent, useRef } from 'react';
+import { useState, useEffect, startTransition, FormEvent } from 'react';
 import { Commercant, CagnotteSaintCyp, TransactionHistory, ClientSaintCyp } from '../types';
 import { DbManager } from '../db';
-import { Award, CreditCard, ChevronRight, CheckCircle2, Ticket, ArrowUpRight, History, Coins, Undo, UserCheck, User, Mail, Phone, ShieldCheck, Download, Share2, Copy, Check } from 'lucide-react';
+import { Award, CreditCard, ChevronRight, CheckCircle2, Ticket, ArrowUpRight, History, Coins, Undo, UserCheck, User, Mail, Phone, ShieldCheck, MailCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShinyButton } from './ui/shiny-button';
-import QRCode from 'qrcode';
 
 interface LoyaltyHubProps {
   idPassWallet: string;
@@ -26,74 +25,16 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
   const [registerName, setRegisterName] = useState('');
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPhone, setRegisterPhone] = useState('');
-  
-  // QR Modal States
-  const [createdClientPass, setCreatedClientPass] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Modale de confirmation d'envoi du magic link
+  const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
+  const [inviteWarning, setInviteWarning] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCagnotte();
     fetchHistory();
     fetchClient();
   }, [idPassWallet, merchant.id]);
-
-  useEffect(() => {
-    if (createdClientPass && qrCanvasRef.current) {
-      QRCode.toCanvas(
-        qrCanvasRef.current,
-        createdClientPass,
-        {
-          width: 240,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#ffffff',
-          },
-        },
-        (error) => {
-          if (error) console.error('Error generating QR code:', error);
-        }
-      );
-    }
-  }, [createdClientPass]);
-
-  const handleDownloadQr = () => {
-    if (!qrCanvasRef.current || !createdClientPass) return;
-    try {
-      const link = document.createElement('a');
-      link.download = `pass-${createdClientPass.toLowerCase()}.png`;
-      link.href = qrCanvasRef.current.toDataURL('image/png');
-      link.click();
-    } catch (e) {
-      console.error('Error downloading QR code:', e);
-    }
-  };
-
-  const handleCopyText = () => {
-    if (!createdClientPass) return;
-    navigator.clipboard.writeText(createdClientPass);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleShareQr = async () => {
-    if (!createdClientPass) return;
-    const shareData = {
-      title: "Mon Pass Saint-Cyp Fidélité",
-      text: `Voici mon Pass Fidélité Commerçant Saint-Cyprien. Mon identifiant : ${createdClientPass}`,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log('Error sharing:', err);
-        handleCopyText();
-      }
-    } else {
-      handleCopyText();
-    }
-  };
 
   const fetchCagnotte = async () => {
     setLoading(true);
@@ -122,23 +63,40 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       alert('Veuillez spécifier le nom du client.');
       return;
     }
+    const email = registerEmail.trim();
+    if (!email) {
+      alert("L'email est requis : un lien de connexion sera envoyé au client.");
+      return;
+    }
 
     setIsSubmitting(true);
+    setInviteWarning(null);
+
     const res = await DbManager.registerClient({
       id_pass_wallet: idPassWallet,
       nom: registerName.trim(),
-      email: registerEmail.trim() || undefined,
-      telephone: registerPhone.trim() || undefined
+      email,
+      telephone: registerPhone.trim() || undefined,
     });
+
+    if (!res.success || !res.data) {
+      setIsSubmitting(false);
+      alert("Erreur lors de l'enregistrement de la fiche client: " + (res.error || 'Erreur inconnue'));
+      return;
+    }
+
+    setClient(res.data);
+    onTransactionComplete();
+
+    // Envoi du magic link au client pour qu'il définisse son mot de passe.
+    const invite = await DbManager.inviteClient(email);
     setIsSubmitting(false);
 
-    if (res.success && res.data) {
-      setClient(res.data);
-      setCreatedClientPass(idPassWallet);
-      onTransactionComplete();
-    } else {
-      alert("Erreur lors de l'enregistrement de la fiche client: " + (res.error || 'Erreur inconnue'));
+    if (!invite.success) {
+      // La fiche est créée, mais le mail a échoué : on prévient sans bloquer.
+      setInviteWarning(invite.error ?? "L'envoi du lien de connexion a échoué.");
     }
+    setInvitedEmail(email);
   };
 
   const fetchHistory = () => {
@@ -215,10 +173,10 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
 
   if (loading) {
     return (
-      <div className="bg-slate-900 border border-slate-850 rounded-3xl shadow-xl p-8 flex items-center justify-center min-h-[300px]">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-8 flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin" />
-          <p className="text-xs font-semibold text-slate-400">Chargement de la cagnotte client...</p>
+          <div className="w-10 h-10 border-4 border-[var(--color-olive)]/10 border-t-[var(--color-olive)] rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-[var(--color-taupe)]">Chargement de la cagnotte client...</p>
         </div>
       </div>
     );
@@ -231,72 +189,49 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
 
   return (
     <div className="space-y-6" id="loyalty-hub-container">
-      {/* QR Code Creation Modal */}
+      {/* Confirmation : magic link envoyé au client */}
       <AnimatePresence>
-        {createdClientPass && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        {invitedEmail && (
+          <div className="fixed inset-0 bg-[var(--color-wood)]/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
+              className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-white/30 via-white to-white/30" />
-              
-              <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white mx-auto mb-4">
-                <CheckCircle2 className="w-6 h-6 animate-pulse" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--color-olive)]/30 via-[var(--color-olive)] to-[var(--color-olive)]/30" />
+
+              <div className="w-14 h-14 rounded-2xl bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-olive-deep)] mx-auto mb-4">
+                <MailCheck className="w-7 h-7" />
               </div>
 
-              <h3 className="text-base font-display font-extrabold text-white tracking-tight uppercase">
-                Fiche Client Créée !
+              <h3 className="text-base font-display font-extrabold text-[var(--color-wood)] tracking-tight uppercase">
+                Lien de connexion envoyé
               </h3>
-              <p className="text-xs text-slate-400 mt-1.5 px-2 leading-relaxed">
-                Le pass de fidélité a été rattaché avec succès. Présentez ou téléchargez ce QR code pour l'ajouter au smartphone du client.
+              <p className="text-xs text-[var(--color-taupe)] mt-1.5 px-2 leading-relaxed">
+                Un email vient d'être envoyé à votre client. Il pourra créer son mot de passe et accéder à son portail.
               </p>
 
-              {/* QR Code Render Area */}
-              <div className="my-6 bg-white p-3 rounded-2xl inline-block shadow-inner border border-slate-705 mx-auto">
-                <canvas ref={qrCanvasRef} className="w-[180px] h-[180px] block" />
-              </div>
-
-              <div className="mb-4">
-                <p className="text-xs font-mono font-bold text-slate-200 tracking-wider bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 inline-block">
-                  {createdClientPass}
+              <div className="my-5">
+                <p className="text-xs font-mono font-bold text-[var(--color-wood)] tracking-wider bg-[var(--color-sand)] px-3 py-2 rounded-xl border border-[var(--color-shell)] inline-flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-[var(--color-olive)]" />
+                  {invitedEmail}
                 </p>
               </div>
 
-              {/* Operations row */}
-              <div className="grid grid-cols-2 gap-2.5 mt-5 mb-5">
-                <button
-                  type="button"
-                  onClick={handleDownloadQr}
-                  className="px-3 py-2.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4" />
-                  Télécharger
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShareQr}
-                  className="px-3 py-2.5 bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-4 h-4 text-emerald-400" />
-                      Copié !
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-4 h-4" />
-                      Partager
-                    </>
-                  )}
-                </button>
-              </div>
+              {inviteWarning && (
+                <div className="mb-4 p-3 bg-[var(--color-paprika)]/10 border border-[var(--color-paprika)]/30 rounded-xl text-[10px] text-[var(--color-paprika)] text-left leading-relaxed">
+                  <strong className="block uppercase tracking-wider mb-1">Avertissement</strong>
+                  La fiche client est créée, mais l'envoi du mail a échoué : {inviteWarning}
+                </div>
+              )}
 
               <ShinyButton
                 type="button"
-                onClick={() => setCreatedClientPass(null)}
+                onClick={() => {
+                  setInvitedEmail(null);
+                  setInviteWarning(null);
+                }}
                 className="w-full"
               >
                 Fermer & Continuer
@@ -313,31 +248,31 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-slate-950 border border-white/20 text-white rounded-3xl p-6 shadow-xl flex flex-col items-center text-center relative overflow-hidden"
+            className="bg-gradient-to-br from-[var(--color-terracotta)] to-[var(--color-paprika)] border border-[var(--color-terracotta-dark)]/40 text-[var(--color-cream)] rounded-3xl p-6 shadow-xl shadow-[var(--color-terracotta)]/20 flex flex-col items-center text-center relative overflow-hidden"
           >
             {/* Background elements */}
-            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-            <div className="absolute -left-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[var(--color-straw)]/25 rounded-full blur-2xl" />
+            <div className="absolute -left-10 -top-10 w-40 h-40 bg-[var(--color-cream)]/15 rounded-full blur-2xl" />
 
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-              <Ticket className="w-8 h-8 text-white" />
+            <div className="w-14 h-14 bg-[var(--color-cream)]/20 rounded-2xl flex items-center justify-center mb-4">
+              <Ticket className="w-8 h-8 text-[var(--color-cream)]" />
             </div>
 
             <h3 className="text-xl font-display font-extrabold tracking-tight">Coup de poing ! Remise Disponible !</h3>
-            <p className="text-xs text-white/90 mt-1.5 max-w-[280px] leading-relaxed">
+            <p className="text-xs text-[var(--color-cream)]/90 mt-1.5 max-w-[280px] leading-relaxed">
               Le client bénéficie maintenant d'une remise chez {merchant.nom_enseigne} ! Présentez-lui sa réduction !
             </p>
 
             <div className="flex gap-2.5 mt-5 w-full justify-center">
               <button
                 onClick={handleRedeemDiscount}
-                className="px-5 py-2.5 bg-white text-slate-950 hover:bg-slate-100 rounded-xl text-xs font-extrabold shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                className="px-5 py-2.5 bg-[var(--color-cream)] text-[var(--color-terracotta-dark)] hover:bg-[var(--color-sand)] rounded-full text-xs font-extrabold shadow-md transition-all active:scale-[0.98] cursor-pointer"
               >
                 Valider la remise
               </button>
               <button
                 onClick={() => setCelebrateDiscount(false)}
-                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-medium transition-all cursor-pointer"
+                className="px-4 py-2.5 bg-[var(--color-cream)]/15 hover:bg-[var(--color-cream)]/25 text-[var(--color-cream)] rounded-full text-xs font-medium transition-all cursor-pointer"
               >
                 Fermer
               </button>
@@ -347,59 +282,61 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </AnimatePresence>
 
       {/* Header Profile Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6 relative overflow-hidden">
-        <div className="flex items-start justify-between">
+      <div className="bg-gradient-to-br from-[var(--color-olive)] to-[var(--color-moss)] border border-[var(--color-olive-dark)]/40 rounded-3xl shadow-xl shadow-[var(--color-olive-deep)]/20 p-6 relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-[var(--color-sage-light)]/20 blur-2xl pointer-events-none" />
+        <div className="absolute -left-6 -bottom-10 w-56 h-56 rounded-full bg-[var(--color-straw)]/15 blur-3xl pointer-events-none" />
+        <div className="flex items-start justify-between relative">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shadow-sm shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/20 flex items-center justify-center text-[var(--color-cream)] shadow-sm shrink-0">
               <CreditCard className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+              <p className="text-[9px] font-bold text-[var(--color-cream)]/80 uppercase tracking-widest font-mono">
                 {client ? `PASS DE FIDÉLITÉ • ${client.nom.toUpperCase()}` : 'PASS DE FIDÉLITÉ WALLET'}
               </p>
-              <h3 className="text-sm md:text-base font-display font-extrabold text-white tracking-tight font-mono uppercase">
+              <h3 className="text-sm md:text-base font-display font-extrabold text-[var(--color-cream)] tracking-tight font-mono uppercase">
                 {idPassWallet}
               </h3>
             </div>
           </div>
           <button
             onClick={onClear}
-            className="p-1 px-3 text-[10px] font-bold text-slate-400 bg-slate-950 border border-slate-800 hover:border-slate-700 hover:text-slate-200 rounded-full transition-all outline-none cursor-pointer"
+            className="p-1 px-3 text-[10px] font-bold text-[var(--color-cream)]/80 bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/20 hover:border-[var(--color-cream)]/40 hover:text-[var(--color-cream)] rounded-full transition-all outline-none cursor-pointer"
           >
             Scanner un autre pass
           </button>
         </div>
 
         {/* Progress Arc and state stats */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-center relative">
           {/* Visual indicators */}
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Solde Actuel</span>
+                <span className="text-[10px] font-bold text-[var(--color-cream)]/80 uppercase tracking-wider block">Solde Actuel</span>
                 <div className="flex items-baseline gap-1.5 mt-1">
-                  <span className="text-4xl font-display font-extrabold text-white tracking-tight font-mono">{points}</span>
-                  <span className="text-[10px] text-white font-bold uppercase font-mono">pts</span>
+                  <span className="text-4xl font-display font-extrabold text-[var(--color-cream)] tracking-tight font-mono">{points}</span>
+                  <span className="text-[10px] text-[var(--color-cream)] font-bold uppercase font-mono">pts</span>
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seuil De Remise</span>
+                <span className="text-[10px] font-bold text-[var(--color-cream)]/80 uppercase tracking-wider block">Seuil De Remise</span>
                 <div className="flex items-baseline gap-1 mt-1 justify-end">
-                  <span className="text-xl font-display font-extrabold text-slate-200">{threshold}</span>
-                  <span className="text-[9px] text-slate-500 font-semibold uppercase font-mono">pts</span>
+                  <span className="text-xl font-display font-extrabold text-[var(--color-cream)]">{threshold}</span>
+                  <span className="text-[9px] text-[var(--color-cream)]/70 font-semibold uppercase font-mono">pts</span>
                 </div>
               </div>
             </div>
 
             {/* Custom styled Progress bar */}
             <div className="space-y-2">
-              <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden relative border border-slate-800/65">
+              <div className="w-full h-3 bg-[var(--color-olive-deep)]/40 rounded-full overflow-hidden relative border border-[var(--color-cream)]/15">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-white shadow-[0_0_8px_1px_rgba(255,255,255,0.4)]' : 'bg-slate-700'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${isEligible ? 'bg-[var(--color-straw)] shadow-[0_0_8px_1px_rgba(212,165,116,0.5)]' : 'bg-[var(--color-sage-light)]'}`}
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[9px] font-bold text-slate-500 font-mono">
+              <div className="flex justify-between items-center text-[9px] font-bold text-[var(--color-cream)]/70 font-mono">
                 <span>0 PT</span>
                 <span>{progressPercent.toFixed(0)}% DU SEUIL</span>
                 <span>{threshold} PTS</span>
@@ -410,13 +347,13 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
           {/* Dynamic Action Trigger/Reward Banner */}
           <div className="h-full flex">
             {isEligible ? (
-              <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 flex flex-col justify-between">
+              <div className="w-full bg-[var(--color-straw)]/20 border border-[var(--color-straw)]/40 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-sm">
                 <div>
-                  <h4 className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <h4 className="text-[10px] font-bold text-[var(--color-straw-light)] flex items-center gap-1.5 uppercase tracking-wider">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-straw-light)]" />
                     REMISE DISPONIBLE !
                   </h4>
-                  <p className="text-[11px] text-emerald-350/80 mt-1 lines-relaxed leading-snug">
+                  <p className="text-[11px] text-[var(--color-cream)]/90 mt-1 lines-relaxed leading-snug">
                     Le client a atteint le seuil requis de <strong>{threshold} points</strong>. Encaisser ou déduire l'offre de récompense en boutique.
                   </p>
                 </div>
@@ -426,16 +363,16 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   disabled={isSubmitting}
                   className="mt-4 w-full"
                 >
-                  <Ticket className="w-3.5 h-3.5 text-white" />
+                  <Ticket className="w-3.5 h-3.5 text-[var(--color-cream)]" />
                   Consommer la remise (-{threshold} pts)
                 </ShinyButton>
               </div>
             ) : (
-              <div className="w-full bg-slate-950/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-center text-center">
-                <Award className="w-7 h-7 text-slate-500 mx-auto mb-2.5" />
-                <p className="text-xs font-semibold text-slate-350">Progression en cours</p>
-                <p className="text-[10px] text-slate-400 mt-1 max-w-[190px] mx-auto leading-relaxed">
-                  Il reste encore <strong className="text-white font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
+              <div className="w-full bg-[var(--color-cream)]/10 border border-[var(--color-cream)]/15 rounded-2xl p-5 flex flex-col justify-center text-center backdrop-blur-sm">
+                <Award className="w-7 h-7 text-[var(--color-cream)]/70 mx-auto mb-2.5" />
+                <p className="text-xs font-semibold text-[var(--color-cream)]">Progression en cours</p>
+                <p className="text-[10px] text-[var(--color-cream)]/80 mt-1 max-w-[190px] mx-auto leading-relaxed">
+                  Il reste encore <strong className="text-[var(--color-cream)] font-mono text-[11px]">{threshold - points} points</strong> avant la remise chez vous.
                 </p>
               </div>
             )}
@@ -444,59 +381,59 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Client Profile Section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-            <UserCheck className="w-4 h-4 text-slate-300" />
+          <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 uppercase">
+            <UserCheck className="w-4 h-4 text-[var(--color-olive)]" />
             Fiche Client Coordonnées
           </h3>
           {client ? (
-            <span className="text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-white" />
+            <span className="text-[9px] font-bold text-[var(--color-cream)] bg-[var(--color-olive)] border border-[var(--color-olive-dark)] px-2.5 py-1 rounded-full uppercase font-mono flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-[var(--color-cream)]" />
               Compte Enregistré
             </span>
           ) : (
-            <span className="text-[9px] font-bold text-slate-400 bg-slate-808/60 border border-slate-700 px-2.5 py-1 rounded-full uppercase font-mono">
+            <span className="text-[9px] font-bold text-[var(--color-taupe)] bg-[var(--color-sand)] border border-[var(--color-shell)] px-2.5 py-1 rounded-full uppercase font-mono">
               Non Renseigné
             </span>
           )}
         </div>
 
         {client ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-850">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--color-sand)] p-4 rounded-2xl border border-[var(--color-shell)]">
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <User className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Nom Complet
               </span>
-              <p className="text-xs text-white font-semibold mt-1">{client.nom}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1">{client.nom}</p>
             </div>
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Adresse Email
               </span>
-              <p className="text-xs text-white font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1 truncate">{client.email || '— Non renseigné'}</p>
             </div>
             <div>
-              <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[9px] text-[var(--color-taupe-light)] uppercase font-bold tracking-wider font-mono flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5 text-[var(--color-taupe-light)]" />
                 Téléphone
               </span>
-              <p className="text-xs text-white font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
+              <p className="text-xs text-[var(--color-wood)] font-semibold mt-1 font-mono">{client.telephone || '— Non renseigné'}</p>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-[var(--color-taupe)] leading-relaxed">
               Ce pass d'identification n'est pas encore associé à une fiche client. Enregistrez les coordonnées ci-dessous pour mieux le fidéliser.
             </p>
-            
-            <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-850">
+
+            <form onSubmit={handleRegisterClientSubmit} className="space-y-3 bg-[var(--color-sand)]/60 p-4 rounded-2xl border border-[var(--color-shell)]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                    Nom Complet du client <span className="text-white font-bold">*</span>
+                  <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
+                    Nom Complet du client <span className="text-[var(--color-paprika)] font-bold">*</span>
                   </label>
                   <input
                     type="text"
@@ -504,11 +441,11 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
                     placeholder="Ex: Jean Dupont"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+                    className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
+                  <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
                     Numéro de Téléphone
                   </label>
                   <input
@@ -516,22 +453,26 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                     value={registerPhone}
                     onChange={(e) => setRegisterPhone(e.target.value)}
                     placeholder="Ex: 06 12 34 56 78"
-                    className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                    className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">
-                  Adresse Email
+                <label className="block text-[9px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-1.5 font-mono">
+                  Adresse Email <span className="text-[var(--color-paprika)] font-bold">*</span>
                 </label>
                 <input
                   type="email"
+                  required
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
                   placeholder="Ex: jean.dupont@gmail.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs font-semibold outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-3.5 py-2.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs font-semibold outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                 />
+                <p className="text-[10px] text-[var(--color-taupe)] mt-1.5 leading-relaxed">
+                  Un lien de connexion sera envoyé à cette adresse pour que le client crée son mot de passe.
+                </p>
               </div>
 
               <ShinyButton
@@ -539,7 +480,7 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                 disabled={isSubmitting}
                 className="w-full"
               >
-                Créer la Fiche Client Coordonnées
+                {isSubmitting ? 'Envoi du lien…' : 'Créer la fiche & envoyer le lien'}
               </ShinyButton>
             </form>
           </div>
@@ -547,20 +488,20 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Credit transaction amount section */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
-        <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 mb-5 uppercase">
-          <Coins className="w-4 h-4 text-slate-300" />
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
+        <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 mb-5 uppercase">
+          <Coins className="w-4 h-4 text-[var(--color-olive)]" />
           Ajouter une transaction
         </h3>
 
         {/* Amount VS points formula toggle tabs */}
-        <div className="grid grid-cols-2 gap-2 mb-5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <div className="grid grid-cols-2 gap-2 mb-5 bg-[var(--color-sand)] p-1 rounded-xl border border-[var(--color-shell)]">
           <button
             onClick={() => startTransition(() => setUseAmountFormula(true))}
             className={`py-2 text-[10px] font-bold rounded-lg transition-all outline-none text-center cursor-pointer ${
               useAmountFormula
-                ? 'bg-slate-800 text-slate-100 font-semibold'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] font-semibold shadow-sm'
+                : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)]'
             }`}
             type="button"
           >
@@ -570,8 +511,8 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
             onClick={() => startTransition(() => setUseAmountFormula(false))}
             className={`py-2 text-[10px] font-bold rounded-lg transition-all outline-none text-center cursor-pointer ${
               !useAmountFormula
-                ? 'bg-slate-800 text-slate-100 font-semibold'
-                : 'text-slate-500 hover:text-slate-300'
+                ? 'bg-[var(--color-olive)] text-[var(--color-cream)] font-semibold shadow-sm'
+                : 'text-[var(--color-taupe)] hover:text-[var(--color-wood)]'
             }`}
             type="button"
           >
@@ -583,10 +524,10 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
           {useAmountFormula ? (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <label className="text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider">
                   Montant de l'achat (€)
                 </label>
-                <span className="text-[9px] text-white bg-white/10 border border-white/10 px-2 py-0.5 rounded font-mono font-bold">
+                <span className="text-[9px] text-[var(--color-olive-deep)] bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 px-2 py-0.5 rounded font-mono font-bold">
                   Rule: 1€ = 1 Point
                 </span>
               </div>
@@ -598,23 +539,23 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}
                   placeholder="Ex: 14.50"
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-2xl text-sm font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-4 py-3.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-2xl text-sm font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   required
                   id="transaction-amount-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500 font-mono">€</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--color-taupe-light)] font-mono">€</span>
               </div>
               {amountInput && parseFloat(amountInput) > 0 && (
-                <p className="text-[11px] text-slate-400 mt-2 italic flex items-center gap-1 font-mono">
-                  <ArrowUpRight className="w-3.5 h-3.5 text-white/50" />
+                <p className="text-[11px] text-[var(--color-taupe)] mt-2 italic flex items-center gap-1 font-mono">
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-olive)]/60" />
                   Cette transaction va créditer{' '}
-                  <strong className="text-white font-mono text-xs">{Math.floor(parseFloat(amountInput))} points</strong>.
+                  <strong className="text-[var(--color-olive-deep)] font-mono text-xs">{Math.floor(parseFloat(amountInput))} points</strong>.
                 </p>
               )}
             </div>
           ) : (
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <label className="block text-[10px] font-bold text-[var(--color-taupe)] uppercase tracking-wider mb-2">
                 Nombre de points à ajouter (Direct)
               </label>
               <div className="relative">
@@ -625,11 +566,11 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
                   value={pointsInput}
                   onChange={(e) => setPointsInput(e.target.value)}
                   placeholder="Ex: 15"
-                  className="w-full px-4 py-3.5 bg-slate-950 border border-slate-850 focus:border-slate-400 focus:bg-slate-900 rounded-2xl text-sm font-semibold font-mono outline-none text-slate-100 placeholder-slate-650"
+                  className="w-full px-4 py-3.5 bg-[var(--color-sand)]/60 border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-2xl text-sm font-semibold font-mono outline-none text-[var(--color-wood)] placeholder-[var(--color-taupe-light)]"
                   required
                   id="transaction-points-input"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 font-mono">PTS</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--color-taupe-light)] font-mono">PTS</span>
               </div>
             </div>
           )}
@@ -646,27 +587,27 @@ export default function LoyaltyHub({ idPassWallet, merchant, onClear, onTransact
       </div>
 
       {/* Recent History Log */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6">
-        <h3 className="text-sm font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 mb-4 uppercase">
-          <History className="w-4 h-4 text-slate-400" />
+      <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-xl p-6">
+        <h3 className="text-sm font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 mb-4 uppercase">
+          <History className="w-4 h-4 text-[var(--color-taupe)]" />
           Historique récent de l'enseigne
         </h3>
 
         {recentMerchantTxs.length === 0 ? (
-          <div className="text-center py-6 text-[11px] text-slate-500 font-mono">
+          <div className="text-center py-6 text-[11px] text-[var(--color-taupe-light)] font-mono">
             Aucun crédit enregistré aujourd’hui sur votre enseigne.
           </div>
         ) : (
           <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
             {recentMerchantTxs.slice(0, 5).map((tx) => (
-              <div key={tx.id} className="flex justify-between items-center p-3 bg-slate-950 border border-slate-850 rounded-xl">
+              <div key={tx.id} className="flex justify-between items-center p-3 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-xl">
                 <div>
-                  <p className="text-xs font-mono font-semibold text-slate-200 uppercase">{tx.id_pass_wallet}</p>
-                  <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                  <p className="text-xs font-mono font-semibold text-[var(--color-wood)] uppercase">{tx.id_pass_wallet}</p>
+                  <p className="text-[9px] text-[var(--color-taupe-light)] font-mono mt-0.5">
                     {new Date(tx.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
-                <div className="text-[10px] font-bold font-mono px-2 py-0.5 rounded text-white bg-white/10">
+                <div className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${tx.type === 'addition' ? 'text-[var(--color-cream)] bg-[var(--color-olive)]' : 'text-[var(--color-cream)] bg-[var(--color-terracotta)]'}`}>
                   {tx.type === 'addition' ? `+${tx.points_ajoutes} pts` : `-${Math.abs(tx.points_ajoutes)} pts (REMISE)`}
                 </div>
               </div>

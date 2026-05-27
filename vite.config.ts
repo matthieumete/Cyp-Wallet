@@ -10,6 +10,13 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      // Force une seule instance de React partagée entre l'app et motion/react.
+      // Sans ce dedupe, Vite peut pré-bundle motion avec sa propre copie de React,
+      // ce qui fait planter useContext (Invalid hook call) sur <motion.div>.
+      dedupe: ['react', 'react-dom'],
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'motion/react'],
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

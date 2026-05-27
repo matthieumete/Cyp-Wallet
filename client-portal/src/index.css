@@ -31,10 +31,6 @@
   --color-taupe: #6b5d4f;
   --color-taupe-light: #9a8e7f;
   --color-stone: #c4b8a6;
-
-  /* Aliases conservés pour l'app commerçant (compat anciens écrans) */
-  --color-brand-brown: #3d2914;
-  --color-brand-sand: #faf6ed;
 }
 
 html, body {
@@ -61,18 +57,4 @@ html, body {
 .animate-sway {
   animation: sway 4s ease-in-out infinite;
   transform-origin: top center;
-}
-
-/* Custom scanner laser animation */
-@keyframes laser {
-  0%, 100% {
-    top: 0%;
-  }
-  50% {
-    top: 100%;
-  }
-}
-
-.animate-laser {
-  animation: laser 2.5s infinite ease-in-out;
 }

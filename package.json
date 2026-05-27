@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:portal": "vite --config client-portal/vite.config.ts --port=3001 --host=0.0.0.0",
     "build": "vite build",
+    "build:portal": "vite build --config client-portal/vite.config.ts",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "preview:portal": "vite preview --config client-portal/vite.config.ts",
+    "clean": "rm -rf dist dist-portal server.js",
+    "lint": "tsc --noEmit",
+    "lint:portal": "tsc --noEmit -p client-portal/tsconfig.json"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
@@ -23,17 +27,19 @@
     "qrcode": "^1.5.4",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "vite": "^6.2.3"
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.4.2"
   }
 }

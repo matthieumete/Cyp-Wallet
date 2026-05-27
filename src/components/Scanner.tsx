@@ -123,13 +123,13 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-xl p-6" id="scanner-section">
+    <div className="bg-[var(--color-cream)] border border-[var(--color-shell)] rounded-3xl shadow-md p-6" id="scanner-section">
       <div className="flex flex-col gap-1 mb-6">
-        <h2 className="text-lg font-display font-medium text-slate-100 tracking-tight flex items-center gap-2 uppercase">
-          <Camera className="w-5 h-5 text-slate-300" />
+        <h2 className="text-lg font-display font-medium text-[var(--color-wood)] tracking-tight flex items-center gap-2 uppercase">
+          <Camera className="w-5 h-5 text-[var(--color-wood-soft)]" />
           Scanner le Wallet Client
         </h2>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-[var(--color-taupe)]">
           Scannez le QR Code de fidélité « StCyp'Wallet » ou entrez le code manuellement.
         </p>
       </div>
@@ -137,17 +137,17 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
       <div className="space-y-6">
         {/* Cam Section Viewport */}
         {!isScanning ? (
-          <div className="bg-slate-950/60 border border-dashed border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all">
-            <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 mb-4 shadow-sm">
+          <div className="bg-[var(--color-sand)] border border-dashed border-[var(--color-shell)] rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all">
+            <div className="w-14 h-14 rounded-full bg-[var(--color-olive)]/10 border border-[var(--color-olive)]/20 flex items-center justify-center text-[var(--color-wood-soft)] mb-4 shadow-sm">
               <Camera className="w-6 h-6" />
             </div>
-            <p className="text-sm font-semibold text-slate-200">Utiliser l'appareil photo</p>
-            <p className="text-xs text-slate-400 mt-1 max-w-[240px] mx-auto leading-relaxed">
+            <p className="text-sm font-semibold text-[var(--color-wood)]">Utiliser l'appareil photo</p>
+            <p className="text-xs text-[var(--color-taupe)] mt-1 max-w-[240px] mx-auto leading-relaxed">
               Scannez directement depuis l'appareil photo de votre smartphone ou tablette.
             </p>
             <button
               onClick={startScanner}
-              className="mt-5 px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-950 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer border-none"
+              className="mt-5 px-5 py-2.5 bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] text-[var(--color-cream)] rounded-full text-xs font-semibold shadow-md shadow-[var(--color-olive)]/20 transition-all cursor-pointer border-none"
               id="start-camera-btn"
             >
               Activer la caméra
@@ -155,26 +155,26 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
           </div>
         ) : (
           <div className="relative">
-            <div className="bg-slate-950 rounded-2xl overflow-hidden shadow-inner aspect-square w-full max-w-[320px] mx-auto relative border-4 border-slate-950 shadow-2xl">
+            <div className="bg-[var(--color-sand)] rounded-2xl overflow-hidden shadow-inner aspect-square w-full max-w-[320px] mx-auto relative border-4 border-[var(--color-sand)] shadow-md">
               {/* Active camera frame inside DOM */}
               <div id={viewId} className="w-full h-full object-cover" />
 
               {/* Laser overlay animation */}
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-red-500/80 shadow-[0_0_10px_2px_rgba(239,68,68,0.8)] animate-laser z-10" />
+              <div className="absolute top-0 left-0 w-full h-[2px] animate-laser z-10" style={{ backgroundColor: 'var(--color-terracotta)', boxShadow: '0 0 10px 2px var(--color-terracotta)' }} />
 
               {/* Ambient guide bracket frames */}
-              <div className="absolute inset-8 border border-white/10 rounded-lg pointer-events-none z-10">
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white rounded-tl" />
-                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white rounded-tr" />
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white rounded-bl" />
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white rounded-br" />
+              <div className="absolute inset-8 border border-[var(--color-olive)]/20 rounded-lg pointer-events-none z-10">
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[var(--color-olive)] rounded-tl" />
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[var(--color-olive)] rounded-tr" />
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[var(--color-olive)] rounded-bl" />
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[var(--color-olive)] rounded-br" />
               </div>
             </div>
 
             <div className="flex justify-center mt-4">
               <button
                 onClick={stopScanner}
-                className="px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold shadow-sm hover:bg-red-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-[var(--color-paprika)]/10 border border-[var(--color-paprika)]/20 text-[var(--color-paprika)] rounded-xl text-xs font-semibold shadow-sm hover:bg-[var(--color-paprika)]/20 transition-all flex items-center gap-1.5 cursor-pointer"
                 id="stop-camera-btn"
               >
                 <X className="w-3.5 h-3.5" />
@@ -186,35 +186,35 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
 
         {/* Scan Error Message */}
         {scanError && (
-          <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl flex items-start gap-2.5 text-xs text-slate-300">
-            <ShieldAlert className="w-4 h-4 shrink-0 text-slate-400 mt-0.5" />
+          <div className="p-4 bg-[var(--color-sand)] border border-[var(--color-shell)] rounded-2xl flex items-start gap-2.5 text-xs text-[var(--color-wood-soft)]">
+            <ShieldAlert className="w-4 h-4 shrink-0 text-[var(--color-taupe)] mt-0.5" />
             <span>{scanError}</span>
           </div>
         )}
 
         {/* Manual Input Divider */}
         <div className="relative flex py-2 items-center">
-          <div className="flex-grow border-t border-slate-800"></div>
-          <span className="flex-shrink mx-4 text-[9px] text-slate-500 font-bold uppercase tracking-wider font-mono">OU SAISIE MANUELLE</span>
-          <div className="flex-grow border-t border-slate-800"></div>
+          <div className="flex-grow border-t border-[var(--color-shell)]"></div>
+          <span className="flex-shrink mx-4 text-[9px] text-[var(--color-taupe-light)] font-bold uppercase tracking-wider font-mono">OU SAISIE MANUELLE</span>
+          <div className="flex-grow border-t border-[var(--color-shell)]"></div>
         </div>
 
         {/* Manual search bar */}
         <form onSubmit={handleManualSubmit} className="flex gap-2">
           <div className="relative flex-grow">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-taupe-light)]" />
             <input
               type="text"
               value={manualId}
               onChange={(e) => setManualId(e.target.value)}
               placeholder="Ex: PASS-CYP-7391"
-              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 focus:border-slate-400 focus:bg-slate-900 rounded-xl text-xs transition-all outline-none uppercase font-mono text-slate-100"
+              className="w-full pl-10 pr-4 py-3 bg-[var(--color-sand)] border border-[var(--color-shell)] focus:border-[var(--color-olive)] focus:bg-[var(--color-cream)] rounded-xl text-xs transition-all outline-none uppercase font-mono text-[var(--color-wood)]"
               id="manual-id-input"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-3 bg-white hover:bg-slate-100 text-slate-950 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1 cursor-pointer border-none font-mono"
+            className="px-4 py-3 bg-[var(--color-olive)] hover:bg-[var(--color-olive-dark)] text-[var(--color-cream)] rounded-full text-xs font-semibold shadow-md shadow-[var(--color-olive)]/20 transition-all flex items-center gap-1 cursor-pointer border-none font-mono"
             id="search-manual-btn"
           >
             <UserCheck className="w-3.5 h-3.5" />
@@ -223,9 +223,9 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
         </form>
 
         {/* Sandbox Simulation tools (Very important for full-scope evaluation and easy testing) */}
-        <div className="pt-4 border-t border-slate-800">
-          <div className="flex items-center gap-1.5 mb-2.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider font-mono">
-            <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
+        <div className="pt-4 border-t border-[var(--color-shell)]">
+          <div className="flex items-center gap-1.5 mb-2.5 text-[var(--color-taupe)] text-[10px] font-bold uppercase tracking-wider font-mono">
+            <Sparkles className="w-3.5 h-3.5 text-[var(--color-olive)] animate-pulse" />
             <span>Démos de Pass de Simulation :</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -234,10 +234,10 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
                 key={cust.id}
                 onClick={() => simulateScan(cust.id)}
                 type="button"
-                className="text-left px-3 py-2 bg-slate-950 hover:bg-slate-900 hover:border-slate-505 border border-slate-800 rounded-xl transition-all flex flex-col cursor-pointer"
+                className="text-left px-3 py-2 bg-[var(--color-sand)] hover:bg-[var(--color-sand)] hover:border-[var(--color-olive)]/20 border border-[var(--color-shell)] rounded-xl transition-all flex flex-col cursor-pointer"
               >
-                <span className="text-[11px] font-semibold text-slate-200">{cust.name}</span>
-                <span className="text-[9px] font-mono text-slate-500 mt-0.5">{cust.id}</span>
+                <span className="text-[11px] font-semibold text-[var(--color-wood)]">{cust.name}</span>
+                <span className="text-[9px] font-mono text-[var(--color-taupe-light)] mt-0.5">{cust.id}</span>
               </button>
             ))}
           </div>
@@ -251,7 +251,7 @@ export default function Scanner({ onScanSuccess, onManualSelect, refreshTrigger 
             className="w-full mt-4"
             id="scanner-create-new-client-btn"
           >
-            <UserPlus className="w-5 h-5 text-white" />
+            <UserPlus className="w-5 h-5 text-[var(--color-cream)]" />
             Créer un Nouveau Client / Pass
           </ShinyButton>
         </div>

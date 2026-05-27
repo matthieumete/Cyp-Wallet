@@ -1,4 +1,4 @@
-import { Commercant, CagnotteSaintCyp } from './types';
+import { Commercant, CagnotteSaintCyp, Produit } from './types';
 
 export const INITIAL_MERCHANTS: Commercant[] = [
   {
@@ -85,6 +85,44 @@ export const INITIAL_CAGNOTTES: CagnotteSaintCyp[] = [
     points_cumules: 95,
     remise_dispo: false,
   },
+];
+
+const nowIso = () => new Date().toISOString();
+const baseProduit = (overrides: Partial<Produit>): Produit => ({
+  id: crypto.randomUUID(),
+  commercant_id: overrides.commercant_id!,
+  nom: overrides.nom!,
+  description: overrides.description ?? null,
+  prix_cents: overrides.prix_cents!,
+  unite: overrides.unite ?? null,
+  categorie: overrides.categorie ?? null,
+  image_url: overrides.image_url ?? null,
+  stock: overrides.stock ?? null,
+  disponible: overrides.disponible ?? true,
+  position: overrides.position ?? 0,
+  date_creation: nowIso(),
+  date_modification: nowIso(),
+});
+
+export const INITIAL_PRODUITS: Produit[] = [
+  // Boulangerie L'Épi d'Or
+  baseProduit({ commercant_id: 'a3b1c2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d', nom: 'Baguette tradition', description: 'Cuite au feu de bois, pétrie à la main', prix_cents: 120, unite: 'pièce', categorie: 'Pain', position: 1 }),
+  baseProduit({ commercant_id: 'a3b1c2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d', nom: 'Pain de campagne', description: 'Levain naturel · pain de 500g', prix_cents: 480, unite: 'pièce', categorie: 'Pain', position: 2 }),
+  baseProduit({ commercant_id: 'a3b1c2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d', nom: 'Croissant beurre AOP', description: 'Pur beurre Charentes-Poitou', prix_cents: 120, unite: 'pièce', categorie: 'Viennoiserie', position: 3 }),
+  baseProduit({ commercant_id: 'a3b1c2d3-4e5f-6a7b-8c9d-0e1f2a3b4c5d', nom: 'Pain aux céréales bio', description: '6 céréales · farine bio locale', prix_cents: 380, unite: 'pièce', categorie: 'Pain', position: 4 }),
+  // Boucherie Catalane
+  baseProduit({ commercant_id: 'b4c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e', nom: 'Côte de bœuf Bazadaise', description: 'Race bouchère, vieillie 3 semaines', prix_cents: 4200, unite: 'kg', categorie: 'Bœuf', position: 1 }),
+  baseProduit({ commercant_id: 'b4c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e', nom: 'Saucisse catalane', description: 'Recette traditionnelle, à l\'ail rose', prix_cents: 1850, unite: 'kg', categorie: 'Charcuterie', position: 2 }),
+  baseProduit({ commercant_id: 'b4c2d3e4-5f6a-7b8c-9d0e-1f2a3b4c5d6e', nom: 'Boudin noir maison', description: 'Préparé chaque mardi', prix_cents: 1600, unite: 'kg', categorie: 'Charcuterie', position: 3, disponible: false }),
+  // Café de l'Ancre
+  baseProduit({ commercant_id: 'c5d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f', nom: 'Café espresso', description: 'Mélange maison, torréfié à Perpignan', prix_cents: 180, unite: 'tasse', categorie: 'Boisson', position: 1 }),
+  baseProduit({ commercant_id: 'c5d3e4f5-6a7b-8c9d-0e1f-2a3b4c5d6e7f', nom: 'Formule petit-déj marin', description: 'Café + jus + viennoiserie', prix_cents: 580, unite: 'formule', categorie: 'Petit-déj', position: 2 }),
+  // Le Comptoir de Saint-Cyp
+  baseProduit({ commercant_id: 'd6e4f5a6-7b8c-9d0e-1f2a-3b4c5d6e7f8a', nom: 'Tomme des Pyrénées', description: 'Lait de brebis, affinage 4 mois', prix_cents: 2800, unite: 'kg', categorie: 'Fromage', position: 1 }),
+  baseProduit({ commercant_id: 'd6e4f5a6-7b8c-9d0e-1f2a-3b4c5d6e7f8a', nom: 'Anchois de Collioure', description: 'Bocal 200g, salaison artisanale', prix_cents: 980, unite: 'pièce', categorie: 'Conserve', position: 2 }),
+  // Aux Saveurs du Port
+  baseProduit({ commercant_id: 'e7f5a6b7-8c9d-0e1f-2a3b-4c5d6e7f8a9b', nom: 'Anchoïade traditionnelle', description: 'Recette Saint-Cyp, bocal 180g', prix_cents: 720, unite: 'pièce', categorie: 'Tartinable', position: 1 }),
+  baseProduit({ commercant_id: 'e7f5a6b7-8c9d-0e1f-2a3b-4c5d6e7f8a9b', nom: 'Tielle sétoise', description: 'Tourte au poulpe, cuite du jour', prix_cents: 480, unite: 'pièce', categorie: 'Plat', position: 2 }),
 ];
 
 export const MOCK_CUSTOMERS = [
